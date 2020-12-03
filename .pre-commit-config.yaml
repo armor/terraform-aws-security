@@ -21,7 +21,3 @@ repos:
       - id: terraform_fmt
       - id: terraform_tflint
       - id: terraform_tfsec
-  - repo: https://github.com/quantum-sec/pre-commit
-    rev: 1.0.2
-    hooks:
-      - id: terraform-validate

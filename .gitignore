@@ -21,3 +21,4 @@ out/
 node_modules
 *.keystore
 *.lic
+*.lock.hcl
