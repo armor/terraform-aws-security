@@ -8,6 +8,11 @@ variable "remote_account_number" {
   type        = string
 }
 
+variable "external_id" {
+  description = "The external ID used by the remote account to assume this role."
+  type        = string
+}
+
 variable "iam_policy_arns" {
   description = "The ARNs of IAM policies to attach to this role."
   type        = set(string)

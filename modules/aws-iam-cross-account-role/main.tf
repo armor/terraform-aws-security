@@ -15,6 +15,14 @@ data "aws_iam_policy_document" "assume_role_policy" {
       type        = "AWS"
       identifiers = [var.remote_account_number]
     }
+
+    condition {
+      test = "StringEquals"
+      values = [
+        var.external_id
+      ]
+      variable = "sts:ExternalId"
+    }
   }
 }
 
