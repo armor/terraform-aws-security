@@ -1,11 +1,11 @@
 {
-  "name": "@quantum-sec/template-terraform-package",
+  "name": "@quantum-sec/package-aws-security",
   "version": "0.0.0-development",
   "private": true,
-  "description": "{{package_description}}",
+  "description": "Contains modules for deploying and managing security resources in AWS.",
   "repository": {
     "type": "git",
-    "url": "git@github.com:quantum-sec/template-terraform-package.git"
+    "url": "git@github.com:quantum-sec/package-aws-security.git"
   },
   "author": "Quantum Security Pte. Ltd.",
   "license": "SEE LICENSE IN LICENSE"

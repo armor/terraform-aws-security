@@ -1,6 +1,6 @@
-# template-terraform-package
+# package-aws-security
 
-{{package_description}}
+This repository contains modules for deploying and managing security resources in AWS.
 
 
 ## Using a Terraform Module
