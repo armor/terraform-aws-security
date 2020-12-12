@@ -13,7 +13,7 @@ data "aws_iam_policy_document" "assume_role_policy" {
 
     principals {
       type        = "AWS"
-      identifiers = [var.remote_account_number]
+      identifiers = ["arn:aws:iam::${var.remote_account_number}:root"]
     }
 
     condition {
