@@ -11,7 +11,7 @@ terraform {
 # ----------------------------------------------------------------------------------------------------------------------
 
 resource "aws_kms_key" "master_key" {
-  description              = "A master key for ${var.name}"
+  description              = "The ${var.name} customer master key."
   policy                   = data.aws_iam_policy_document.policy.json
   deletion_window_in_days  = var.deletion_window_in_days
   customer_master_key_spec = var.customer_master_key_spec
