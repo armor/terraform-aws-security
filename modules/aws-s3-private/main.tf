@@ -155,14 +155,14 @@ data "aws_iam_policy_document" "private_policy" {
       ]
 
       resources = [
-        join(":", ["arn", data.aws_partition.current.partition, "s3", "", "", join("/", [var.bucket_name, "*"])])
+        join(":", ["arn", "aws", "s3", "", "", join("/", [var.bucket_name, "*"])])
       ]
 
       condition {
         test     = "ArnLike"
         variable = "aws:SourceArn"
         values = [
-          join(":", ["arn", data.aws_partition.current.partition, "s3", "", "", var.bucket_name])
+          join(":", ["arn", "aws", "s3", "", "", var.bucket_name])
         ]
       }
 
