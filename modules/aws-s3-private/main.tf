@@ -51,7 +51,7 @@ resource "aws_s3_bucket" "private_s3" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 resource "aws_s3_bucket" "private_s3_logs" {
-  # only create this buket if logging_bucket_name is not specified
+  # only create this bucket if logging_bucket_name is not specified
   count = var.logging_enabled && try(length(var.logging_bucket_name), 0) == 0 ? 1 : 0
 
   bucket = local.logging_bucket_name

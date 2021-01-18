@@ -3,7 +3,7 @@
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "name" {
-  description = "The name of the s3 bucket.  This can also be used in the creation of the logging bucket if var.enable_logging is true."
+  description = "The name of the s3 bucket. This can also be used in the creation of the logging bucket if `enable_logging` is true."
   type        = string
 }
 
@@ -12,7 +12,7 @@ variable "name" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "aws_region" {
-  description = "The AWS Region to deploy this resource into."
+  description = "The AWS region into which this resource is deployed."
   type        = string
   default     = "ap-southeast-1"
 }

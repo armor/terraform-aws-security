@@ -35,18 +35,20 @@ variable "kms_master_key_arn" {
 }
 
 variable "logging_bucket_name" {
-  description = "(optional) The name of the target bucket that will receive the log objects.  This defaults to {var.name}-logs."
+  description = "(optional) The name of the target bucket that will receive the log objects.  This defaults to `name`-logs.  If `logging_bucket_name` is specified then the named s3 bucket is not created by this module."
   type        = string
   default     = null
 }
 
 variable "logging_bucket_prefix" {
-  description = "(optional) To specify a key prefix for log objects. when "
+  # https://docs.aws.amazon.com/general/latest/gr/glos-chap.html#keyprefix
+  description = "(optional) To specify a key prefix for log objects. This prefix is used to prefix server access log objects when `logging_enabled` is `true` and generally should only be used when multiple s3 buckets are logging to a single s3 bucket which can be defined with `logging_bucket_name`.  Key prefixes are useful to distinguish between source buckets when multiple buckets log to the same target bucket."
   type        = string
   default     = ""
 }
 
 variable "logging_enabled" {
+  # https://docs.aws.amazon.com/AmazonS3/latest/user-guide/server-access-logging.html
   description = "(optional) Toggle access logging of this S3 bucket."
   type        = bool
   default     = true
@@ -66,7 +68,7 @@ variable "sse_algorithm" {
 
   validation {
     condition     = var.sse_algorithm == "AES256" || var.sse_algorithm == "aws:kms"
-    error_message = "(optional) The value for sse_algorithm must be AES256 or aws:kms. A value of AES256 requires a value to be set for kms_master_key_arn."
+    error_message = "The value for sse_algorithm must be AES256 or aws:kms. A value of AES256 requires a value to be set for kms_master_key_arn."
   }
 }
 
