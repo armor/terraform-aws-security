@@ -55,6 +55,24 @@ variable "logging_enabled" {
 
 }
 
+variable "object_lock_configuration" {
+  # https://docs.aws.amazon.com/AmazonS3/latest/dev/object-lock-overview.html
+  type = object({
+    # https://docs.aws.amazon.com/AmazonS3/latest/dev/object-lock-overview.html#object-lock-retention-modes
+    # If the mode is set to GOVERNANCE then either the s3:BypassGovernanceRetention or s3:GetBucketObjectLockConfiguration
+    # permissions will allow the deletion of locked objects
+    mode = string
+    # minimum 1 days
+    days = number
+  })
+  description = "Enable Write Once Read Many (WORM).  Object-lock Configuration of S3 Bucket can use GOVERNANCE or COMPLIANCE mode.  COMPLIANCE can not be removed while GOVERNANCE can be disabled by the root user.  `versioning_enabled` must be set to true for this to be enabled. This configuration can only be set on a new S3 bucket, otherwise you will need to contact AWS Support to have it configured."
+  default     = null
+  validation {
+    condition     = var.object_lock_configuration == null || can((var.object_lock_configuration.mode == "GOVERNANCE" || var.object_lock_configuration.mode == "COMPLIANCE") && var.object_lock_configuration.days >= 1)
+    error_message = "Mode must be either GOVERNANCE or COMPLIANCE.  The value for days must be a number with a minimum value of 1."
+  }
+}
+
 variable "policy_json" {
   description = "Additional base S3 bucket policy in JSON format."
   type        = string

@@ -36,6 +36,21 @@ resource "aws_s3_bucket" "private_s3" {
     // mfa_delete = var.versioning_enabled && var.versioning_with_mfa_delete
   }
 
+  dynamic "object_lock_configuration" {
+    for_each = var.versioning_enabled && var.object_lock_configuration != null ? ["object_lock_configuration"] : []
+
+    content {
+      object_lock_enabled = "Enabled"
+
+      rule {
+        default_retention {
+          mode = var.object_lock_configuration.mode
+          days = var.object_lock_configuration.days
+        }
+      }
+    }
+  }
+
   dynamic "logging" {
     for_each = var.logging_enabled ? ["logging"] : []
 
@@ -65,6 +80,10 @@ resource "aws_s3_bucket" "private_s3_logs" {
       }
     }
   }
+
+  # We can not configure the logging bucket to be a WORM bucket.
+  # https://docs.aws.amazon.com/AmazonS3/latest/dev/object-lock-overview.html#object-lock-retention-modes
+  # S3 buckets with S3 Object Lock cannot be used as destination buckets for Amazon S3 server access logging
 
   tags = var.tags
 
