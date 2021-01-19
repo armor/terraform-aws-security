@@ -20,8 +20,11 @@ func TestPrivateS3Bucket(t *testing.T) {
 	// in your AWS account
 	name := strings.ToLower(fmt.Sprintf("test-private-s3-bucket-%s", strings.ToLower(random.UniqueId())))
 
-	// Pick a random AWS region to test in. This helps ensure your code works in all regions.
-	awsRegion := aws.GetRandomStableRegion(t, nil, nil)
+	// We are currently targeting only regions defined as ApprovedRegions in variables.go.
+	// When we are comfortable with multi-region testing then we can expand ApprovedRegions
+	// Eventually we may want to remove the array of ApprovedRegions and pass nil to only chose from stable regions.
+	// This will help to ensure your code works in all regions.
+	awsRegion := aws.GetRandomStableRegion(t, ApprovedRegions, nil)
 
 	terraformOptions := &terraform.Options{
 		TerraformDir: modulePath,
