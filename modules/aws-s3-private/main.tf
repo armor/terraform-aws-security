@@ -6,6 +6,8 @@ locals {
   aws_account_id        = data.aws_caller_identity.current.account_id
   logging_bucket_name   = var.logging_bucket_name != null ? var.logging_bucket_name : format("%v-logs", var.bucket_name)
   logging_bucket_prefix = var.logging_bucket_prefix != null ? var.logging_bucket_prefix : ""
+  logging_bucket_arn    = element(compact(coalescelist(concat(aws_s3_bucket.private_s3_logs.*.arn, []), concat(data.aws_s3_bucket.existing_private_s3_logs.*.arn, []))), 0)
+  logging_bucket_id     = element(compact(coalescelist(concat(aws_s3_bucket.private_s3_logs.*.id, []), concat(data.aws_s3_bucket.existing_private_s3_logs.*.id, []))), 0)
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -55,7 +57,7 @@ resource "aws_s3_bucket" "private_s3" {
     for_each = var.logging_enabled ? ["logging"] : []
 
     content {
-      target_bucket = local.logging_bucket_name
+      target_bucket = local.logging_bucket_id
       target_prefix = local.logging_bucket_prefix
     }
   }
@@ -88,6 +90,12 @@ resource "aws_s3_bucket" "private_s3_logs" {
   tags = var.tags
 
   force_destroy = var.force_destroy
+}
+
+data "aws_s3_bucket" "existing_private_s3_logs" {
+  # only lookup this bucket if logging_bucket_name is specified
+  count  = var.logging_enabled && try(length(var.logging_bucket_name), 0) >= 1 ? 1 : 0
+  bucket = var.logging_bucket_name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------

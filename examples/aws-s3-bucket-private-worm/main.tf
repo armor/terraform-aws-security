@@ -19,6 +19,7 @@ module "aws_s3_bucket_private" {
   logging_enabled = var.enable_logging
   tags            = var.tags
 
+  logging_bucket_name = var.logging_bucket_name
   object_lock_configuration = {
     mode = var.worm_mode
     days = var.worm_retention_days

@@ -23,6 +23,12 @@ variable "enable_logging" {
   default     = false
 }
 
+variable "logging_bucket_name" {
+  description = "The name of the target bucket that will receive the log objects. This defaults to `name`-logs. If `logging_bucket_name` is specified then the named s3 bucket is not created by this module."
+  type        = string
+  default     = null
+}
+
 variable "worm_mode" {
   # https://docs.aws.amazon.com/AmazonS3/latest/dev/object-lock-overview.html
   type = string
