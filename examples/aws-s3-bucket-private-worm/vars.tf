@@ -29,7 +29,7 @@ variable "worm_mode" {
   # https://docs.aws.amazon.com/AmazonS3/latest/dev/object-lock-overview.html#object-lock-retention-modes
   # If the mode is set to GOVERNANCE then either the s3:BypassGovernanceRetention or s3:GetBucketObjectLockConfiguration
   # permissions will allow the deletion of locked objects
-  description = "Enable Write Once Read Many (WORM).  Object-lock Configuration of S3 Bucket can use GOVERNANCE or COMPLIANCE mode.  COMPLIANCE can not be removed while GOVERNANCE can be disabled by the root user.  `versioning_enabled` must be set to true for this to be enabled. This configuration can only be set on a new S3 bucket, otherwise you will need to contact AWS Support to have it configured."
+  description = "Enable Write Once Read Many (WORM). Object-lock Configuration of S3 Bucket can use GOVERNANCE or COMPLIANCE mode. COMPLIANCE can not be removed while GOVERNANCE can be disabled by the root user. `versioning_enabled` must be set to true for this to be enabled. This configuration can only be set on a new S3 bucket, otherwise you will need to contact AWS Support to have it configured."
   default     = "GOVERNANCE"
   validation {
     condition     = var.worm_mode == "GOVERNANCE" || var.worm_mode == "COMPLIANCE"
@@ -40,7 +40,7 @@ variable "worm_mode" {
 variable "worm_retention_days" {
   # https://docs.aws.amazon.com/AmazonS3/latest/dev/object-lock-overview.html
   type        = number
-  description = "The number of days an object version will be locked from deletion.  If the `worm_mode` is set to GOVERNANCE then either the s3:BypassGovernanceRetention or s3:GetBucketObjectLockConfiguration, otherwise the object may not be deleted for this many days."
+  description = "The number of days an object version will be locked from deletion. If the `worm_mode` is set to GOVERNANCE then either the s3:BypassGovernanceRetention or s3:GetBucketObjectLockConfiguration, otherwise the object may not be deleted for this many days."
   default     = 1
   validation {
     condition     = var.worm_retention_days >= 1

@@ -12,7 +12,7 @@ locals {
 # CREATE A PRIVATE BUCKET
 # ----------------------------------------------------------------------------------------------------------------------
 
-#tfsec:ignore:AWS002 logging is enabled by default.  It is inside of a 'dynamic' block.
+#tfsec:ignore:AWS002 logging is enabled by default. It is inside of a 'dynamic' block.
 resource "aws_s3_bucket" "private_s3" {
   bucket = var.bucket_name
   acl    = "private"

@@ -12,7 +12,7 @@ variable "bucket_name" {
 # ---------------------------------------------------------------------------------------------------------------------
 
 variable "allow_s3_integration_services" {
-  description = "Add a secure s3 bucket policy allowing s3 services to PutItem into the bucket.  Used by Analytics and Inventory."
+  description = "Add a secure s3 bucket policy allowing s3 services to PutItem into the bucket. Used by Analytics and Inventory."
   type        = bool
   default     = false
 }
@@ -35,14 +35,14 @@ variable "kms_master_key_arn" {
 }
 
 variable "logging_bucket_name" {
-  description = "The name of the target bucket that will receive the log objects.  This defaults to `name`-logs.  If `logging_bucket_name` is specified then the named s3 bucket is not created by this module."
+  description = "The name of the target bucket that will receive the log objects. This defaults to `name`-logs. If `logging_bucket_name` is specified then the named s3 bucket is not created by this module."
   type        = string
   default     = null
 }
 
 variable "logging_bucket_prefix" {
   # https://docs.aws.amazon.com/general/latest/gr/glos-chap.html#keyprefix
-  description = "To specify a key prefix for log objects. This prefix is used to prefix server access log objects when `logging_enabled` is `true` and generally should only be used when multiple s3 buckets are logging to a single s3 bucket which can be defined with `logging_bucket_name`.  Key prefixes are useful to distinguish between source buckets when multiple buckets log to the same target bucket."
+  description = "To specify a key prefix for log objects. This prefix is used to prefix server access log objects when `logging_enabled` is `true` and generally should only be used when multiple s3 buckets are logging to a single s3 bucket which can be defined with `logging_bucket_name`. Key prefixes are useful to distinguish between source buckets when multiple buckets log to the same target bucket."
   type        = string
   default     = ""
 }
@@ -65,11 +65,11 @@ variable "object_lock_configuration" {
     # minimum 1 days
     days = number
   })
-  description = "Enable Write Once Read Many (WORM).  Object-lock Configuration of S3 Bucket can use GOVERNANCE or COMPLIANCE mode.  COMPLIANCE can not be removed while GOVERNANCE can be disabled by the root user.  `versioning_enabled` must be set to true for this to be enabled. This configuration can only be set on a new S3 bucket, otherwise you will need to contact AWS Support to have it configured."
+  description = "Enable Write Once Read Many (WORM). Object-lock Configuration of S3 Bucket can use GOVERNANCE or COMPLIANCE mode. COMPLIANCE can not be removed while GOVERNANCE can be disabled by the root user. `versioning_enabled` must be set to true for this to be enabled. This configuration can only be set on a new S3 bucket, otherwise you will need to contact AWS Support to have it configured."
   default     = null
   validation {
     condition     = var.object_lock_configuration == null || can((var.object_lock_configuration.mode == "GOVERNANCE" || var.object_lock_configuration.mode == "COMPLIANCE") && var.object_lock_configuration.days >= 1)
-    error_message = "Mode must be either GOVERNANCE or COMPLIANCE.  The value for days must be a number with a minimum value of 1."
+    error_message = "Mode must be either GOVERNANCE or COMPLIANCE. The value for days must be a number with a minimum value of 1."
   }
 }
 
@@ -100,7 +100,7 @@ variable "versioning_enabled" {
   # https://docs.aws.amazon.com/AmazonS3/latest/dev/Versioning.html
   # Versioning is a means of keeping multiple variants of an object in the same bucket. You can use versioning to preserve, retrieve, and restore every version of every object stored in your Amazon S3 bucket. With versioning, you can easily recover from both unintended user actions and application failures. When you enable versioning for a bucket, if Amazon S3 receives multiple write requests for the same object simultaneously, it stores all of the objects.
   # If you enable versioning for a bucket, Amazon S3 automatically generates a unique version ID for the object being stored. In one bucket, for example, you can have two objects with the same key, but different version IDs
-  description = "Enables ability to keep multiple variants of an object in the bucket.  Versioning can not be disabled once enabled."
+  description = "Enables ability to keep multiple variants of an object in the bucket. Versioning can not be disabled once enabled."
   type        = bool
   default     = true
 }
