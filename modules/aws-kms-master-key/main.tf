@@ -52,7 +52,7 @@ data "aws_iam_policy_document" "policy" {
 
       principals {
         type        = "Service"
-        identifiers = [statement.value.name]
+        identifiers = [statement.key]
       }
 
       dynamic "condition" {

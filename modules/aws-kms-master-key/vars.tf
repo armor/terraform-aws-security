@@ -5,21 +5,26 @@ variable "name" {
 
 variable "service_principals" {
   description = "A list of AWS service principals that should be given permissions to use this CMK."
-  type = list(object({
-    arn = string,
-    conditions = set(object({
+  type = map(object({
+    actions = list(string),
+    conditions = list(object({
       test     = string,
       variable = string,
-      values   = set(string)
+      values   = list(string)
     }))
   }))
-  default = []
+  default = {}
 }
 
 variable "deletion_window_in_days" {
   description = "The number of days to retain this CMK after it has been marked for deletion."
   type        = number
   default     = 30
+
+  validation {
+    condition     = var.deletion_window_in_days >= 7 && var.deletion_window_in_days <= 30
+    error_message = "The value is expected to be in the range (7 - 30)."
+  }
 }
 
 variable "enable_key_rotation" {
