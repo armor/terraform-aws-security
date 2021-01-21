@@ -80,15 +80,22 @@ variable "policy_json" {
 }
 
 variable "sse_algorithm" {
-  description = "The server-side encryption algorithm to use. Valid values are AES256 and aws:kms"
+  description = "The server-side encryption algorithm to use. Valid values are `AES256` and `aws:kms`"
   type        = string
-  default     = "AES256"
+  default     = "aws:kms"
 
   validation {
     condition     = var.sse_algorithm == "AES256" || var.sse_algorithm == "aws:kms"
-    error_message = "The value for sse_algorithm must be AES256 or aws:kms. A value of AES256 requires a value to be set for kms_master_key_arn."
+    error_message = "The value for sse_algorithm must be AES256 or aws:kms. This value must be aws:kms if kms_master_key_arn is specified.."
   }
 }
+
+# variable "bucket_key_enabled" {
+#   # https://docs.aws.amazon.com/AmazonS3/latest/dev/bucket-key.html
+#   description = "Whether or not to use Amazon S3 Bucket Keys for SSE-KMS."
+#   type        = string
+#   default     = true
+# }
 
 variable "tags" {
   description = "A key-value map of tags to apply to this resource."

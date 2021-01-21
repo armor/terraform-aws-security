@@ -6,8 +6,9 @@ locals {
   aws_account_id        = data.aws_caller_identity.current.account_id
   logging_bucket_name   = var.logging_bucket_name != null ? var.logging_bucket_name : format("%v-logs", var.bucket_name)
   logging_bucket_prefix = var.logging_bucket_prefix != null ? var.logging_bucket_prefix : ""
-  logging_bucket_arn    = element(compact(coalescelist(concat(aws_s3_bucket.private_s3_logs.*.arn, []), concat(data.aws_s3_bucket.existing_private_s3_logs.*.arn, []))), 0)
-  logging_bucket_id     = element(compact(coalescelist(concat(aws_s3_bucket.private_s3_logs.*.id, []), concat(data.aws_s3_bucket.existing_private_s3_logs.*.id, []))), 0)
+  logging_bucket_arn    = var.logging_enabled ? element(compact(coalescelist(concat(aws_s3_bucket.private_s3_logs.*.arn, []), concat(data.aws_s3_bucket.existing_private_s3_logs.*.arn, []))), 0) : null
+  logging_bucket_id     = var.logging_enabled ? element(compact(coalescelist(concat(aws_s3_bucket.private_s3_logs.*.id, []), concat(data.aws_s3_bucket.existing_private_s3_logs.*.id, []))), 0) : null
+  // bucket_key_enabled    = var.bucket_key_enabled && var.sse_algorithm == "aws:kms"
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -28,7 +29,13 @@ resource "aws_s3_bucket" "private_s3" {
     }
   }
 
+  # pending https://github.com/hashicorp/terraform-provider-aws/issues/16536
+  # pr: https://github.com/hashicorp/terraform-provider-aws/pull/16581
+  // bucket_key_enabled = local.bucket_key_enabled
+
   tags = var.tags
+
+  force_destroy = var.force_destroy
 
   versioning {
     enabled = var.versioning_enabled
