@@ -3,7 +3,9 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 terraform {
-  required_version = ">= 0.12.26"
+  // https://www.terraform.io/docs/language/meta-arguments/count.html
+  // Version note: Module support for count was added in Terraform 0.13, and previous versions can only use it with resources.
+  required_version = ">= 0.13"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
@@ -21,9 +23,9 @@ resource "null_resource" "dependency_getter" {
 locals {
   // kms_key_arn will eventually support creating a key here that is dedicated to cloudtrail
   // for now we will look up the kms_key_arn that is passed in, which may be a key id, key arn, alias name or alias arn
-  kms_key_arn    = var.kms_key_arn != null ? data.aws_kms_key.user_defined.arn : null
-  s3_bucket_name = var.name
-
+  kms_key_arn      = var.kms_key_arn != null ? data.aws_kms_key.user_defined.arn : null
+  s3_bucket_name   = var.s3_bucket_name != null ? var.s3_bucket_name : var.name
+  create_s3_bucket = var.create_s3_bucket
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -34,7 +36,7 @@ resource "aws_cloudtrail" "cloudtrail" {
   name = var.name
 
   # Specifies the name of the S3 bucket designated for publishing log files.
-  s3_bucket_name = module.bucket.id
+  s3_bucket_name = local.create_s3_bucket ? module.bucket[0].id : local.s3_bucket_name
 
   # Specifies whether the trail is created in the current region or in all regions. Defaults to false.
   # https://docs.aws.amazon.com/awscloudtrail/latest/userguide/receive-cloudtrail-log-files-from-multiple-regions.html
@@ -109,6 +111,8 @@ resource "aws_cloudtrail" "cloudtrail" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 module "bucket" {
+  // https://www.terraform.io/docs/language/meta-arguments/count.html
+  count  = local.create_s3_bucket ? 1 : 0
   source = "../aws-s3-private-cloudtrail"
 
   bucket_name                             = local.s3_bucket_name

@@ -10,17 +10,17 @@ output "trail_name" {
 
 output "s3_bucket_name" {
   description = "The name of the S3 bucket where cloudtrail logs are delivered."
-  value       = module.bucket.id
+  value       = local.create_s3_bucket ? module.bucket[0].id : null
 }
 
 output "s3_bucket_arn" {
   description = "The ARN of the S3 bucket where cloudtrail logs are delivered."
-  value       = module.bucket.arn
+  value       = local.create_s3_bucket ? module.bucket[0].arn : null
 }
 
 output "s3_access_logging_bucket_arn" {
   description = "The ARN of the S3 bucket where server access logs are delivered."
-  value       = module.bucket.bucket_logging_arn
+  value       = local.create_s3_bucket ? module.bucket[0].bucket_logging_arn : null
 }
 
 output "kms_key_arn" {

@@ -139,6 +139,18 @@ variable "enable_insight_types" {
   }
 }
 
+variable "create_s3_bucket" {
+  description = "Setting this to false will skip creating the S3 bucket.  This allows us to create an S3 bucket in a separate account, dedicated to audit/logging, and reference the bucket here (useful for organization trail)."
+  type        = bool
+  default     = true
+}
+
+variable "s3_bucket_name" {
+  description = "Setting this value will override the computed bucket name.  If you set `create_s3_bucket` to `false` then you will need to provide a value for this variable."
+  type        = string
+  default     = null
+}
+
 variable "dependencies" {
   # https://github.com/hashicorp/terraform/issues/1178#issuecomment-449158607
   description = "Support module dependencies. Resources within this module will not be created until the dependencies exist and will not be destroyed before the resources in the list are destroyed."
