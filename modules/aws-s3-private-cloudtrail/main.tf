@@ -26,7 +26,7 @@ resource "null_resource" "dependency_getter" {
 
 module "s3_private" {
   source                = "../aws-s3-private"
-  bucket_name           = var.bucket_name
+  bucket_name           = local.bucket_name
   force_destroy         = var.force_destroy
   kms_master_key_arn    = var.kms_master_key_arn
   sse_algorithm         = local.sse_algorithm
@@ -42,6 +42,10 @@ module "s3_private" {
     mode = var.worm_mode
     days = var.worm_retention_days
   }
+
+  depends_on = [
+    null_resource.dependency_getter,
+  ]
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -68,7 +72,7 @@ data "aws_iam_policy_document" "cloudtrail_policy" {
 
     # Explict deny policy overrides any allow when resources are specified
     resources = [
-      join(":", ["arn", "aws", "s3", "", "", var.bucket_name])
+      join(":", ["arn", "aws", "s3", "", "", local.bucket_name])
     ]
 
     principals {
@@ -91,7 +95,7 @@ data "aws_iam_policy_document" "cloudtrail_policy" {
     ]
 
     // arn:aws:s3:::myBucketName/[optional] myLogFilePrefix/AWSLogs/111111111111/*",
-    resources = formatlist("arn:aws:s3:::%s/%sAWSLogs/%s/*", var.bucket_name, local.bucket_key_prefix, local.aws_account_ids)
+    resources = formatlist("arn:aws:s3:::%s/%sAWSLogs/%s/*", local.bucket_name, local.bucket_key_prefix, local.aws_account_ids)
 
     condition {
       test     = "StringEquals"

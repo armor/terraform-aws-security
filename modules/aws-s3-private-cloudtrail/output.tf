@@ -1,10 +1,10 @@
 output "arn" {
-  description = "The ARN of the customer master key."
+  description = "The ARN of the private S3 Bucket."
   value       = module.s3_private.arn
 }
 
 output "id" {
-  description = "The unique identifier of the customer master key."
+  description = "The name of the private S3 Bucket."
   value       = module.s3_private.id
 }
 
