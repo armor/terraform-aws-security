@@ -54,10 +54,6 @@ variable "worm_mode" {
   # permissions will allow the deletion of locked objects
   description = "Enable Write Once Read Many (WORM). Object-lock Configuration of S3 Bucket can use GOVERNANCE or COMPLIANCE mode. COMPLIANCE can not be removed while GOVERNANCE can be disabled by the root user. `versioning_enabled` must be set to true for this to be enabled. This configuration can only be set on a new S3 bucket, otherwise you will need to contact AWS Support to have it configured."
   default     = "GOVERNANCE"
-  validation {
-    condition     = var.worm_mode == "GOVERNANCE" || var.worm_mode == "COMPLIANCE"
-    error_message = "Mode must be either GOVERNANCE or COMPLIANCE."
-  }
 }
 
 variable "worm_retention_days" {
@@ -65,10 +61,19 @@ variable "worm_retention_days" {
   type        = number
   description = "The number of days an object version will be locked from deletion. If the `worm_mode` is set to GOVERNANCE then either the s3:BypassGovernanceRetention or s3:GetBucketObjectLockConfiguration, otherwise the object may not be deleted for this many days."
   default     = 1
-  validation {
-    condition     = var.worm_retention_days >= 1
-    error_message = "The value for worm_retention_days must be equal to or greater than 1."
-  }
+}
+
+
+variable "create_s3_bucket" {
+  description = "Setting this to false will skip creating the S3 bucket.  This allows us to create an S3 bucket in a separate account, dedicated to audit/logging, and reference the bucket here (useful for organization trail)."
+  type        = bool
+  default     = true
+}
+
+variable "s3_bucket_name" {
+  description = "Setting this value will override the computed bucket name.  If you set `create_s3_bucket` to `false` then you will need to provide a value for this variable."
+  type        = string
+  default     = null
 }
 
 variable "tags" {

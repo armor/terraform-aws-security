@@ -17,6 +17,12 @@ locals {
   aws_account_ids    = distinct(concat([data.aws_caller_identity.current.account_id], var.aws_account_ids))
   name               = format("example-%s", var.name)
   kms_master_key_arn = module.aws_kms_master_key.key_arn
+
+  create_s3_bucket = var.create_s3_bucket
+  s3_bucket_name   = var.s3_bucket_name
+
+  worm_mode           = var.worm_mode
+  worm_retention_days = var.worm_retention_days
 }
 
 module "aws_cloudtrail" {
@@ -25,7 +31,12 @@ module "aws_cloudtrail" {
   name                  = local.name
   kms_key_arn           = local.kms_master_key_arn
   force_destroy         = true
+  enable_data_logging   = true
   is_organization_trail = false
+  create_s3_bucket      = local.create_s3_bucket
+  s3_bucket_name        = local.s3_bucket_name
+  worm_mode             = local.worm_mode
+  worm_retention_days   = local.worm_retention_days
 }
 
 module "aws_kms_master_key" {
