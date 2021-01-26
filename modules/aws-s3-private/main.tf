@@ -11,6 +11,12 @@ locals {
   // bucket_key_enabled    = var.bucket_key_enabled && var.sse_algorithm == "aws:kms"
 }
 
+resource "null_resource" "dependency_getter" {
+  triggers = {
+    instance = join(",", var.dependencies)
+  }
+}
+
 # ----------------------------------------------------------------------------------------------------------------------
 # CREATE A PRIVATE BUCKET
 # ----------------------------------------------------------------------------------------------------------------------
@@ -68,6 +74,10 @@ resource "aws_s3_bucket" "private_s3" {
       target_prefix = local.logging_bucket_prefix
     }
   }
+
+  depends_on = [
+    null_resource.dependency_getter
+  ]
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -110,12 +120,17 @@ data "aws_s3_bucket" "existing_private_s3_logs" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 resource "aws_s3_bucket_public_access_block" "private_access" {
-  bucket = aws_s3_bucket.private_s3.id
+  for_each = setunion([aws_s3_bucket.private_s3.id], aws_s3_bucket.private_s3_logs.*.id)
+  bucket   = each.key
 
   block_public_acls       = true
   block_public_policy     = true
   restrict_public_buckets = true
   ignore_public_acls      = true
+
+  depends_on = [
+    aws_s3_bucket.private_s3,
+  ]
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -123,14 +138,14 @@ resource "aws_s3_bucket_public_access_block" "private_access" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 resource "aws_s3_bucket_policy" "private_policy" {
-  # use the bucket id from the aws_s3_bucket_public_access_block otherwise we will receive due to a race
+  # use the bucket id from the aws_s3_bucket_public_access_block to avoid a race condition
   # Error: Error putting S3 policy: OperationAborted: A conflicting conditional operation is currently in progress against this resource.
-  bucket = aws_s3_bucket_public_access_block.private_access.id
+  bucket = aws_s3_bucket_public_access_block.private_access[aws_s3_bucket.private_s3.id].id
   policy = data.aws_iam_policy_document.private_policy.json
 
   depends_on = [
     aws_s3_bucket.private_s3,
-    aws_s3_bucket_public_access_block.private_access,
+    null_resource.dependency_getter,
   ]
 }
 
