@@ -119,6 +119,9 @@ module "bucket" {
   enable_cloudtrail_bucket_access_logging = var.enable_cloudtrail_bucket_access_logging
   kms_master_key_arn                      = local.kms_key_arn
 
+  worm_mode           = var.worm_mode
+  worm_retention_days = var.worm_retention_days
+
   force_destroy = var.force_destroy
   dependencies  = var.dependencies
 

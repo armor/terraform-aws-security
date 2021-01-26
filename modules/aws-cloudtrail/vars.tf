@@ -139,6 +139,20 @@ variable "enable_insight_types" {
   }
 }
 
+variable "worm_mode" {
+  # https://docs.aws.amazon.com/AmazonS3/latest/dev/object-lock-overview.html#object-lock-retention-modes
+  type        = string
+  description = "The default Object Lock retention mode you want to apply to new objects placed in this bucket. Valid values are GOVERNANCE and COMPLIANCE."
+  default     = "GOVERNANCE"
+}
+
+variable "worm_retention_days" {
+  # https://docs.aws.amazon.com/AmazonS3/latest/dev/object-lock-overview.html#object-lock-retention-periods
+  type        = number
+  description = "The number of days an object version will be locked from deletion. If the `worm_mode` is set to GOVERNANCE then user with either s3:BypassGovernanceRetention or s3:GetBucketObjectLockConfiguration may bypass this restriction, otherwise the object may not be deleted for this many days."
+  default     = 365
+}
+
 variable "create_s3_bucket" {
   description = "Setting this to false will skip creating the S3 bucket.  This allows us to create an S3 bucket in a separate account, dedicated to audit/logging, and reference the bucket here (useful for organization trail)."
   type        = bool
