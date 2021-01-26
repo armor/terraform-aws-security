@@ -23,6 +23,9 @@ data "aws_caller_identity" "current" {}
 
 data "aws_iam_policy_document" "policy" {
 
+  source_json   = var.policy_document_source_json
+  override_json = var.policy_document_override_json
+
   # Allow the root account full access to allow IAM-controlled CMK permissions.
   statement {
     sid       = "AllowRootAccountFullAccess"

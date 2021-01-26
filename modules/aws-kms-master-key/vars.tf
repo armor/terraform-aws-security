@@ -3,6 +3,18 @@ variable "name" {
   type        = string
 }
 
+variable "policy_document_override_json" {
+  description = " An IAM policy document to import and override the current policy document. Statements with non-blank sids in the override document will overwrite statements with the same sid in the current document. Statements without an sid cannot be overwritten."
+  type        = string
+  default     = null
+}
+
+variable "policy_document_source_json" {
+  description = "An IAM policy document to import as a base for the current policy document. Statements with non-blank sids in the current policy document will overwrite statements with the same sid in the source json. Statements without an sid cannot be overwritten."
+  type        = string
+  default     = null
+}
+
 variable "service_principals" {
   description = "A list of AWS service principals that should be given permissions to use this CMK."
   type = map(object({
