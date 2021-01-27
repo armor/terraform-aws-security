@@ -32,3 +32,8 @@ output "kms_key_alias" {
   description = "The ARN of the KMS key used by the S3 bucket to encrypt cloudtrail logs."
   value       = local.kms_key_alias
 }
+
+output "organization_id" {
+  description = "The Id of the AWS Organization that this account is a member of."
+  value       = local.organization_id
+}

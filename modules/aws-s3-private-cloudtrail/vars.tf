@@ -17,10 +17,23 @@ variable "aws_account_ids" {
   default     = []
 }
 
+variable "organization_id" {
+  # https://console.aws.amazon.com/organizations/home?#/organization/overview
+  description = "The unique identifier (ID) of an organization.  Only set this to a value if this bucket is used as a common cloudtrail bucket for an organization trail."
+  type        = string
+  default     = null
+
+  validation {
+    # https://docs.aws.amazon.com/organizations/latest/APIReference/API_Organization.html
+    condition     = var.organization_id == null || can(regex("^(o-[a-z0-9]{10,32})$", var.organization_id))
+    error_message = "The Organization Id is in the incorrect format."
+  }
+}
+
 variable "bucket_key_prefix" {
   description = "Specifies the S3 key prefix that follows the name of the bucket you have designated for log file delivery."
   type        = string
-  default     = "/"
+  default     = ""
 }
 
 variable "dependencies" {

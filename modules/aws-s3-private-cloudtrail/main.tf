@@ -8,7 +8,10 @@ locals {
   bucket_name     = format("cloudtrail-%s%s", data.aws_caller_identity.current.account_id, (var.bucket_name != null ? "-${var.bucket_name}" : ""))
 
   // local.bucket_key_prefix will either be an empty string or the value of `var.bucket_key_prefix` with a trailing /
-  bucket_key_prefix = var.bucket_key_prefix != null && trim(var.bucket_key_prefix, "/") != "" ? "${trim(var.bucket_key_prefix, "/")}/" : ""
+  bucket_key_prefix = var.bucket_key_prefix == null ? "" : trim(var.bucket_key_prefix, "/") != "" ? "${trim(var.bucket_key_prefix, "/")}/" : ""
+
+  organization_id       = var.organization_id
+  is_organization_trail = local.organization_id != null
 
   // sse_algorithm will always be set to a value, providing encryption at rest regardless of encryption key use.  AES256 will lead to default SSE-S3 encryption.
   sse_algorithm = var.kms_master_key_arn == null || length(var.kms_master_key_arn) == 0 ? "AES256" : "aws:kms"
@@ -91,11 +94,19 @@ data "aws_iam_policy_document" "cloudtrail_policy" {
     }
 
     actions = [
-      "s3:PutObject"
+      "s3:PutObject",
     ]
 
-    // arn:aws:s3:::myBucketName/[optional] myLogFilePrefix/AWSLogs/111111111111/*",
-    resources = formatlist("arn:aws:s3:::%s/%sAWSLogs/%s/*", local.bucket_name, local.bucket_key_prefix, local.aws_account_ids)
+    # organization management account or non-organization trails are logged to:
+    # arn:aws:s3:::myBucketName/[optional] myLogFilePrefix/AWSLogs/111111111111/*"
+    # organization members are logged to:
+    # arn:aws:s3:::myBucketName/AWSLogs/o-abcdefghij/111111111111/*"
+    # union the set with the optional organizational member trail accounts
+    # passing var.aws_account_ids as ["*"] will permit cloudtrail from any account to write to the bucket
+    resources = setunion(
+      formatlist("arn:aws:s3:::%s/%sAWSLogs/%s/*", local.bucket_name, local.bucket_key_prefix, local.aws_account_ids),
+      local.is_organization_trail ? formatlist("arn:aws:s3:::%s/AWSLogs/%s/%s/*", local.bucket_name, local.organization_id, local.aws_account_ids) : [],
+    )
 
     condition {
       test     = "StringEquals"

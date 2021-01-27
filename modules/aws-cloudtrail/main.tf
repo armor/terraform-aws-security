@@ -27,12 +27,13 @@ locals {
   create_kms_key        = var.create_dedicated_kms_cloudtrail_key
   create_s3_bucket      = var.create_s3_bucket
   is_organization_trail = var.is_organization_trail
+  organization_id       = local.is_organization_trail == true ? data.aws_organizations_organization.current[0].id : null
   lookup_kms_key        = local.create_kms_key == false && var.kms_key_arn != null
 
   kms_key_additional_iam_policy = var.kms_key_additional_iam_policy
 
   aws_account_ids    = distinct(concat([data.aws_caller_identity.current.account_id], var.aws_account_ids))
-  bucket_key_prefix  = var.is_organization_trail ? data.aws_organizations_organization.current[0].id : ""
+  s3_key_prefix      = var.s3_key_prefix
   discovered_kms_key = local.lookup_kms_key == true ? data.aws_kms_key.user_defined[0].arn : null
   kms_key_arn        = local.create_kms_key == true ? module.aws_kms_master_key[0].key_arn : local.discovered_kms_key
   kms_key_alias      = local.create_kms_key == true ? module.aws_kms_master_key[0].key_alias : null
@@ -50,6 +51,7 @@ resource "aws_cloudtrail" "cloudtrail" {
 
   # Specifies the name of the S3 bucket designated for publishing log files.
   s3_bucket_name = local.create_s3_bucket ? module.bucket[0].id : local.s3_bucket_name
+  s3_key_prefix  = local.s3_key_prefix
 
   # Specifies whether the trail is created in the current region or in all regions. Defaults to false.
   # https://docs.aws.amazon.com/awscloudtrail/latest/userguide/receive-cloudtrail-log-files-from-multiple-regions.html
@@ -129,10 +131,11 @@ module "bucket" {
   source = "../aws-s3-private-cloudtrail"
 
   bucket_name                             = local.s3_bucket_name
-  bucket_key_prefix                       = local.bucket_key_prefix
+  bucket_key_prefix                       = local.s3_key_prefix
   aws_account_ids                         = local.aws_account_ids
   enable_cloudtrail_bucket_access_logging = var.enable_cloudtrail_bucket_access_logging
   kms_master_key_arn                      = local.kms_key_arn
+  organization_id                         = local.organization_id
 
   worm_mode           = var.worm_mode
   worm_retention_days = var.worm_retention_days
@@ -192,27 +195,48 @@ data "aws_iam_policy_document" "kms_cloudtrail_policy" {
     resources = ["*"]
   }
 
-  statement {
-    sid    = "AllowServicePrincipalAccess-cloudtrail-Decrypt"
-    effect = "Allow"
-    principals {
-      type        = "AWS"
-      identifiers = ["*"]
+  # Allow the root account full access to allow IAM-controlled CMK permissions.
+  dynamic "statement" {
+    for_each = local.is_organization_trail == true ? [data.aws_organizations_organization.current[0].master_account_id] : []
+    content {
+      sid       = "AllowOrgRootAccountFullAccess"
+      effect    = "Allow"
+      resources = ["*"]
+      actions   = ["kms:*"]
+
+      principals {
+        type = "AWS"
+        identifiers = [
+          "arn:aws:iam::${statement.value}:root"
+        ]
+      }
     }
-    actions = [
-      "kms:Decrypt",
-      "kms:ReEncryptFrom"
-    ]
-    resources = ["*"]
-    condition {
-      test     = "StringEquals"
-      variable = "aws:PrincipalOrgID"
-      values   = [data.aws_organizations_organization.current[0].id]
-    }
-    condition {
-      test     = "StringLike"
-      variable = "kms:EncryptionContext:aws:cloudtrail:arn"
-      values   = formatlist("arn:aws:cloudtrail:*:%s:trail/%s", local.aws_account_ids, local.name)
+  }
+
+  dynamic "statement" {
+    for_each = local.is_organization_trail == true ? [data.aws_organizations_organization.current[0].id] : []
+    content {
+      sid    = "AllowServicePrincipalAccess-cloudtrail-Decrypt"
+      effect = "Allow"
+      principals {
+        type        = "AWS"
+        identifiers = ["*"]
+      }
+      actions = [
+        "kms:Decrypt",
+        "kms:ReEncryptFrom"
+      ]
+      resources = ["*"]
+      condition {
+        test     = "StringEquals"
+        variable = "aws:PrincipalOrgID"
+        values   = [statement.value]
+      }
+      condition {
+        test     = "StringLike"
+        variable = "kms:EncryptionContext:aws:cloudtrail:arn"
+        values   = formatlist("arn:aws:cloudtrail:*:%s:trail/%s", local.aws_account_ids, local.name)
+      }
     }
   }
 }

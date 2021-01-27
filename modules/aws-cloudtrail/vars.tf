@@ -128,7 +128,7 @@ variable "data_logging_resource_values" {
 
 variable "enable_insight_logging" {
   type        = bool
-  description = "(optional) describe your variable"
+  description = "Enables insight for identifying unusual operational activity."
   default     = false
 }
 
@@ -185,6 +185,12 @@ variable "create_s3_bucket" {
 
 variable "s3_bucket_name" {
   description = "Setting this value will override the computed bucket name.  If you set `create_s3_bucket` to `false` then you will need to provide a value for this variable."
+  type        = string
+  default     = null
+}
+
+variable "s3_key_prefix" {
+  description = "Specifies the S3 key prefix that follows the name of the bucket you have designated for log file delivery."
   type        = string
   default     = null
 }
