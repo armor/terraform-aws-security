@@ -23,14 +23,16 @@ resource "null_resource" "dependency_getter" {
 locals {
   name = var.name
 
-  create_cloudtrail = var.create_cloudtrail
-  create_kms_key    = var.create_dedicated_kms_cloudtrail_key
-  create_s3_bucket  = var.create_s3_bucket
-  lookup_kms_key    = local.create_kms_key == false && var.kms_key_arn != null
+  create_cloudtrail     = var.create_cloudtrail
+  create_kms_key        = var.create_dedicated_kms_cloudtrail_key
+  create_s3_bucket      = var.create_s3_bucket
+  is_organization_trail = var.is_organization_trail
+  lookup_kms_key        = local.create_kms_key == false && var.kms_key_arn != null
 
   kms_key_additional_iam_policy = var.kms_key_additional_iam_policy
 
   aws_account_ids    = distinct(concat([data.aws_caller_identity.current.account_id], var.aws_account_ids))
+  bucket_key_prefix  = var.is_organization_trail ? data.aws_organizations_organization.current[0].id : ""
   discovered_kms_key = local.lookup_kms_key == true ? data.aws_kms_key.user_defined[0].arn : null
   kms_key_arn        = local.create_kms_key == true ? module.aws_kms_master_key[0].key_arn : local.discovered_kms_key
   kms_key_alias      = local.create_kms_key == true ? module.aws_kms_master_key[0].key_alias : null
@@ -76,7 +78,7 @@ resource "aws_cloudtrail" "cloudtrail" {
   # https://docs.aws.amazon.com/awscloudtrail/latest/userguide/encrypting-cloudtrail-log-files-with-aws-kms.html
   kms_key_id = local.kms_key_arn
 
-  is_organization_trail = var.is_organization_trail
+  is_organization_trail = local.is_organization_trail
 
   tags = local.tags
 
@@ -127,6 +129,7 @@ module "bucket" {
   source = "../aws-s3-private-cloudtrail"
 
   bucket_name                             = local.s3_bucket_name
+  bucket_key_prefix                       = local.bucket_key_prefix
   aws_account_ids                         = local.aws_account_ids
   enable_cloudtrail_bucket_access_logging = var.enable_cloudtrail_bucket_access_logging
   kms_master_key_arn                      = local.kms_key_arn
@@ -230,7 +233,7 @@ data "aws_kms_key" "user_defined" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 data "aws_organizations_organization" "current" {
-  count = local.create_kms_key == true ? 1 : 0
+  count = local.is_organization_trail == true || local.create_kms_key == true ? 1 : 0
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
