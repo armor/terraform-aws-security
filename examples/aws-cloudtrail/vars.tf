@@ -20,7 +20,7 @@ variable "aws_region" {
 variable "aws_account_ids" {
   description = "A list of AWS Account IDs that will be permit cloudtrail to write to this bucket."
   type        = list(string)
-  default     = []
+  default     = ["1111222233334444"]
 }
 
 variable "enable_cloudtrail_bucket_access_logging" {
@@ -63,7 +63,6 @@ variable "worm_retention_days" {
   default     = 1
 }
 
-
 variable "create_s3_bucket" {
   description = "Setting this to false will skip creating the S3 bucket.  This allows us to create an S3 bucket in a separate account, dedicated to audit/logging, and reference the bucket here (useful for organization trail)."
   type        = bool
@@ -77,7 +76,15 @@ variable "s3_bucket_name" {
 }
 
 variable "tags" {
-  description = "A key-value map of tags to apply to this resource."
+  description = "A key-value map of tags to apply to this resource.  Tags are useful to demonstrate COGM/COGS."
   type        = map(string)
-  default     = {}
+  default = {
+    cost_center = "engineering"
+    department  = "security_engineering"
+    team        = "cloud_security"
+    stack       = "security_events"
+    project     = "quantum"
+    service     = "cloudtrail"
+    application = "sentinel"
+  }
 }

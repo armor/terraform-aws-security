@@ -1,11 +1,11 @@
 output "trail_arn" {
   description = "The ARN of the cloudtrail trail."
-  value       = aws_cloudtrail.cloudtrail.arn
+  value       = local.create_cloudtrail ? aws_cloudtrail.cloudtrail[0].arn : null
 }
 
 output "trail_name" {
   description = "The name of the cloudtrail trail."
-  value       = aws_cloudtrail.cloudtrail.name
+  value       = local.create_cloudtrail ? aws_cloudtrail.cloudtrail[0].name : null
 }
 
 output "s3_bucket_name" {
@@ -26,4 +26,9 @@ output "s3_access_logging_bucket_arn" {
 output "kms_key_arn" {
   description = "The ARN of the KMS key used by the S3 bucket to encrypt cloudtrail logs."
   value       = local.kms_key_arn
+}
+
+output "kms_key_alias" {
+  description = "The ARN of the KMS key used by the S3 bucket to encrypt cloudtrail logs."
+  value       = local.kms_key_alias
 }

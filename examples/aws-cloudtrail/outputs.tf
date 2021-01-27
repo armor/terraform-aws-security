@@ -27,3 +27,8 @@ output "kms_key_arn" {
   description = "The ARN of the KMS key used by the S3 bucket to encrypt cloudtrail logs."
   value       = module.aws_cloudtrail.kms_key_arn
 }
+
+output "kms_key_alias" {
+  description = "The ARN of the KMS key used by the S3 bucket to encrypt cloudtrail logs."
+  value       = module.aws_cloudtrail.kms_key_alias
+}

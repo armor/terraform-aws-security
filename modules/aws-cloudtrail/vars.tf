@@ -8,14 +8,27 @@ variable "name" {
   default     = "quantum-trail"
 }
 
-variable "kms_key_arn" {
-  description = "If you wish to specify a custom KMS key, then specify the key arn using this variable. This is especially useful when using CloudTrail with multiple AWS accounts, so the logs are all encrypted using the same key."
-  type        = string
-}
-
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL MODULE PARAMETERS
 # ---------------------------------------------------------------------------------------------------------------------
+
+variable "kms_key_additional_iam_policy" {
+  description = "An IAM policy document to import and override the current policy document. Statements with non-blank sids in the override document will overwrite statements with the same sid in the current document. Statements without a sid cannot be overwritten."
+  type        = string
+  default     = null
+}
+
+variable "kms_key_arn" {
+  description = "If you wish to specify a custom KMS key, then specify the key arn using this variable.  `create_dedicated_kms_cloudtrail_key` must be set to `false` to lookup this kms key. This is especially useful when using CloudTrail with multiple AWS accounts, so the logs are all encrypted using the same key."
+  type        = string
+  default     = null
+}
+
+variable "aws_account_ids" {
+  description = "A list of AWS Account IDs for which cloudtrail will permitted to write to the S3 bucket."
+  type        = list(string)
+  default     = []
+}
 
 variable "is_organization_trail" {
   # If this is set to `true` while not running under the context of the aws organization management account then an error similar to the following may be returned.
@@ -39,13 +52,13 @@ variable "enable_cloudtrail_bucket_access_logging" {
 }
 
 variable "enable_cloudtrail" {
-  description = "Enables logging for the trail. Setting this to false will pause logging."
+  description = "Enables logging for the trail. Setting this to `false` will pause logging."
   type        = bool
   default     = true
 }
 
 variable "is_multi_region_trail" {
-  description = "Specifies whether CloudTrail will log only API calls in the current region or in all regions. (true or false)"
+  description = "Specifies whether CloudTrail will log only API calls in the current region or in all regions."
   type        = bool
   default     = true
 }
@@ -63,8 +76,7 @@ variable "force_destroy" {
 }
 
 variable "enable_data_logging" {
-  # https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html
-  description = "Enable the logging of data events.  See "
+  description = "Enable the logging of data events.  See https://docs.aws.amazon.com/awscloudtrail/latest/userguide/logging-data-events-with-cloudtrail.html for details on data logging."
   type        = bool
   default     = false
 }
@@ -151,6 +163,18 @@ variable "worm_retention_days" {
   type        = number
   description = "The number of days an object version will be locked from deletion. If the `worm_mode` is set to GOVERNANCE then user with either s3:BypassGovernanceRetention or s3:GetBucketObjectLockConfiguration may bypass this restriction, otherwise the object may not be deleted for this many days."
   default     = 365
+}
+
+variable "create_cloudtrail" {
+  description = "Setting this to false will skip creating the trail.  This allows us to create a trail in the root organization account, separating the s3 bucket into a dedicated to audit/logging."
+  type        = bool
+  default     = true
+}
+
+variable "create_dedicated_kms_cloudtrail_key" {
+  description = "Setting this to false will skip creating the dedicated kms key.  This allows us to reference a CMK that is managed outside of this module (useful for organization trail)."
+  type        = bool
+  default     = true
 }
 
 variable "create_s3_bucket" {

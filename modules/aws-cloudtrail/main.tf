@@ -21,11 +21,21 @@ resource "null_resource" "dependency_getter" {
 }
 
 locals {
-  // kms_key_arn will eventually support creating a key here that is dedicated to cloudtrail
-  // for now we will look up the kms_key_arn that is passed in, which may be a key id, key arn, alias name or alias arn
-  kms_key_arn      = var.kms_key_arn != null ? data.aws_kms_key.user_defined.arn : null
-  s3_bucket_name   = var.s3_bucket_name != null ? var.s3_bucket_name : var.name
-  create_s3_bucket = var.create_s3_bucket
+  name = var.name
+
+  create_cloudtrail = var.create_cloudtrail
+  create_kms_key    = var.create_dedicated_kms_cloudtrail_key
+  create_s3_bucket  = var.create_s3_bucket
+  lookup_kms_key    = local.create_kms_key == false && var.kms_key_arn != null
+
+  kms_key_additional_iam_policy = var.kms_key_additional_iam_policy
+
+  aws_account_ids    = distinct(concat([data.aws_caller_identity.current.account_id], var.aws_account_ids))
+  discovered_kms_key = local.lookup_kms_key == true ? data.aws_kms_key.user_defined[0].arn : null
+  kms_key_arn        = local.create_kms_key == true ? module.aws_kms_master_key[0].key_arn : local.discovered_kms_key
+  kms_key_alias      = local.create_kms_key == true ? module.aws_kms_master_key[0].key_alias : null
+  s3_bucket_name     = var.s3_bucket_name != null ? var.s3_bucket_name : local.name
+  tags               = var.tags
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -33,7 +43,8 @@ locals {
 # ----------------------------------------------------------------------------------------------------------------------
 
 resource "aws_cloudtrail" "cloudtrail" {
-  name = var.name
+  count = local.create_cloudtrail == true ? 1 : 0
+  name  = local.name
 
   # Specifies the name of the S3 bucket designated for publishing log files.
   s3_bucket_name = local.create_s3_bucket ? module.bucket[0].id : local.s3_bucket_name
@@ -67,7 +78,7 @@ resource "aws_cloudtrail" "cloudtrail" {
 
   is_organization_trail = var.is_organization_trail
 
-  tags = var.tags
+  tags = local.tags
 
   # Specifies the name of the Amazon SNS topic defined for notification of log file delivery.
   sns_topic_name = var.notify_sns_topic_name
@@ -112,10 +123,11 @@ resource "aws_cloudtrail" "cloudtrail" {
 
 module "bucket" {
   // https://www.terraform.io/docs/language/meta-arguments/count.html
-  count  = local.create_s3_bucket ? 1 : 0
+  count  = local.create_s3_bucket == true ? 1 : 0
   source = "../aws-s3-private-cloudtrail"
 
   bucket_name                             = local.s3_bucket_name
+  aws_account_ids                         = local.aws_account_ids
   enable_cloudtrail_bucket_access_logging = var.enable_cloudtrail_bucket_access_logging
   kms_master_key_arn                      = local.kms_key_arn
 
@@ -125,15 +137,105 @@ module "bucket" {
   force_destroy = var.force_destroy
   dependencies  = var.dependencies
 
-  tags = var.tags
+  tags = local.tags
 }
 
+# ----------------------------------------------------------------------------------------------------------------------
+# CREATE THE CMK
+# ----------------------------------------------------------------------------------------------------------------------
+
+module "aws_kms_master_key" {
+  count  = local.create_kms_key == true ? 1 : 0
+  source = "../aws-kms-master-key"
+
+  name                    = local.name
+  deletion_window_in_days = 7
+
+  policy_document_override_json = data.aws_iam_policy_document.kms_cloudtrail_policy[0].json
+
+  tags = local.tags
+}
+
+data "aws_iam_policy_document" "kms_cloudtrail_policy" {
+  count = local.create_kms_key == true ? 1 : 0
+
+  override_json = local.kms_key_additional_iam_policy
+
+  statement {
+    sid    = "AllowServicePrincipalAccess-cloudtrail-Encrypt"
+    effect = "Allow"
+
+    principals {
+      type        = "Service"
+      identifiers = ["cloudtrail.amazonaws.com"]
+    }
+    actions   = ["kms:GenerateDataKey*"]
+    resources = ["*"]
+    condition {
+      test     = "StringLike"
+      variable = "kms:EncryptionContext:aws:cloudtrail:arn"
+      values   = formatlist("arn:aws:cloudtrail:*:%s:trail/%s", local.aws_account_ids, local.name)
+    }
+  }
+
+  statement {
+    sid    = "AllowServicePrincipalAccess-cloudtrail-Describe"
+    effect = "Allow"
+    principals {
+      type        = "Service"
+      identifiers = ["cloudtrail.amazonaws.com"]
+    }
+    actions   = ["kms:DescribeKey"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "AllowServicePrincipalAccess-cloudtrail-Decrypt"
+    effect = "Allow"
+    principals {
+      type        = "AWS"
+      identifiers = ["*"]
+    }
+    actions = [
+      "kms:Decrypt",
+      "kms:ReEncryptFrom"
+    ]
+    resources = ["*"]
+    condition {
+      test     = "StringEquals"
+      variable = "aws:PrincipalOrgID"
+      values   = [data.aws_organizations_organization.current[0].id]
+    }
+    condition {
+      test     = "StringLike"
+      variable = "kms:EncryptionContext:aws:cloudtrail:arn"
+      values   = formatlist("arn:aws:cloudtrail:*:%s:trail/%s", local.aws_account_ids, local.name)
+    }
+  }
+}
 
 # ----------------------------------------------------------------------------------------------------------------------
 # GET THE ARN FOR THE KMS KEY
 # ----------------------------------------------------------------------------------------------------------------------
 
 data "aws_kms_key" "user_defined" {
+  count = local.lookup_kms_key == true ? 1 : 0
+
   # supports passing in an alias
   key_id = var.kms_key_arn
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# GET INFORMATION ABOUT OUR ORGANIZATION
+# ----------------------------------------------------------------------------------------------------------------------
+
+data "aws_organizations_organization" "current" {
+  count = local.create_kms_key == true ? 1 : 0
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# GET INFORMATION ABOUT OUR CURRENT IDENTITY
+# ----------------------------------------------------------------------------------------------------------------------
+
+data "aws_caller_identity" "current" {
 }
