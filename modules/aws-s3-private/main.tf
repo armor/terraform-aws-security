@@ -133,7 +133,7 @@ resource "aws_s3_bucket_public_access_block" "private_access" {
 }
 
 resource "aws_s3_bucket_public_access_block" "logs_private_access" {
-  count  = var.logging_enabled && try(length(var.logging_bucket_name), 0) >= 1 ? 1 : 0
+  count  = var.logging_enabled && try(length(var.logging_bucket_name), 0) == 0 ? 1 : 0
   bucket = element(aws_s3_bucket.private_s3_logs.*.id, count.index)
 
   block_public_acls       = true
