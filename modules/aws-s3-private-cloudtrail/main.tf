@@ -17,12 +17,6 @@ locals {
   sse_algorithm = var.kms_master_key_arn == null || length(var.kms_master_key_arn) == 0 ? "AES256" : "aws:kms"
 }
 
-resource "null_resource" "dependency_getter" {
-  triggers = {
-    instance = join(",", var.dependencies)
-  }
-}
-
 # ----------------------------------------------------------------------------------------------------------------------
 # CREATE A PRIVATE CLOUDTRAIL BUCKET
 # ----------------------------------------------------------------------------------------------------------------------
@@ -45,10 +39,6 @@ module "s3_private" {
     mode = var.worm_mode
     days = var.worm_retention_days
   }
-
-  depends_on = [
-    null_resource.dependency_getter,
-  ]
 }
 
 # ----------------------------------------------------------------------------------------------------------------------

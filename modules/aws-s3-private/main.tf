@@ -11,12 +11,6 @@ locals {
   // bucket_key_enabled    = var.bucket_key_enabled && var.sse_algorithm == "aws:kms"
 }
 
-resource "null_resource" "dependency_getter" {
-  triggers = {
-    instance = join(",", var.dependencies)
-  }
-}
-
 # ----------------------------------------------------------------------------------------------------------------------
 # CREATE A PRIVATE BUCKET
 # ----------------------------------------------------------------------------------------------------------------------
@@ -74,10 +68,6 @@ resource "aws_s3_bucket" "private_s3" {
       target_prefix = local.logging_bucket_prefix
     }
   }
-
-  depends_on = [
-    null_resource.dependency_getter
-  ]
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -157,8 +147,7 @@ resource "aws_s3_bucket_policy" "private_policy" {
   policy = data.aws_iam_policy_document.private_policy.json
 
   depends_on = [
-    aws_s3_bucket.private_s3,
-    null_resource.dependency_getter,
+    aws_s3_bucket.private_s3
   ]
 }
 

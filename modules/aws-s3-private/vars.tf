@@ -17,13 +17,6 @@ variable "allow_s3_integration_services" {
   default     = false
 }
 
-variable "dependencies" {
-  # https://github.com/hashicorp/terraform/issues/1178#issuecomment-449158607
-  description = "Support module dependencies. Resources within this module will not be created until the dependencies exist and will not be destroyed before the resources in the list are destroyed."
-  type        = list(any)
-  default     = []
-}
-
 variable "force_destroy" {
   description = "A boolean that indicates all objects (including any locked objects) should be deleted from the bucket so that the bucket can be destroyed without error. These objects are not recoverable."
   type        = bool

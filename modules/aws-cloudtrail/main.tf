@@ -3,21 +3,9 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 terraform {
-  // https://www.terraform.io/docs/language/meta-arguments/count.html
-  // Version note: Module support for count was added in Terraform 0.13, and previous versions can only use it with resources.
+  # https://www.terraform.io/docs/language/meta-arguments/count.html
+  # Version note: Module support for count was added in Terraform 0.13, and previous versions can only use it with resources.
   required_version = ">= 0.13"
-}
-
-# ---------------------------------------------------------------------------------------------------------------------
-# AD-HOC MODULE DEPENDENCY
-# See: https://github.com/hashicorp/terraform/issues/1178#issuecomment-449158607  (null_resource implementation)
-# See: https://github.com/hashicorp/terraform/issues/1178#issuecomment-473091030  (use of triggers and join())
-# ---------------------------------------------------------------------------------------------------------------------
-
-resource "null_resource" "dependency_getter" {
-  triggers = {
-    instance = join(",", var.dependencies)
-  }
 }
 
 locals {
@@ -116,8 +104,8 @@ resource "aws_cloudtrail" "cloudtrail" {
   }
 
   depends_on = [
-    module.bucket,
-    null_resource.dependency_getter,
+    # the conditional module.bucket must be completely satisfied prior to creating the cloudtrail
+    module.bucket
   ]
 }
 
@@ -141,7 +129,6 @@ module "bucket" {
   worm_retention_days = var.worm_retention_days
 
   force_destroy = var.force_destroy
-  dependencies  = var.dependencies
 
   tags = local.tags
 }

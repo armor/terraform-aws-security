@@ -194,10 +194,3 @@ variable "s3_key_prefix" {
   type        = string
   default     = null
 }
-
-variable "dependencies" {
-  # https://github.com/hashicorp/terraform/issues/1178#issuecomment-449158607
-  description = "Support module dependencies. Resources within this module will not be created until the dependencies exist and will not be destroyed before the resources in the list are destroyed."
-  type        = list(any)
-  default     = []
-}
