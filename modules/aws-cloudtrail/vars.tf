@@ -5,7 +5,6 @@
 variable "name" {
   description = "The name of the CloudTrail 'trail' to create."
   type        = string
-  default     = "quantum-trail"
 }
 
 # ---------------------------------------------------------------------------------------------------------------------
