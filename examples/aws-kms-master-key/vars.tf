@@ -5,15 +5,15 @@ variable "name" {
 
 variable "service_principals" {
   description = "A list of AWS service principals that should be given permissions to use this CMK."
-  type = list(object({
-    arn = string,
-    conditions = set(object({
+  type = map(object({
+    actions = list(string),
+    conditions = list(object({
       test     = string,
       variable = string,
-      values   = set(string)
+      values   = list(string)
     }))
   }))
-  default = []
+  default = {}
 }
 
 variable "deletion_window_in_days" {

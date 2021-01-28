@@ -3,23 +3,40 @@ variable "name" {
   type        = string
 }
 
+variable "policy_document_override_json" {
+  description = " An IAM policy document to import and override the current policy document. Statements with non-blank sids in the override document will overwrite statements with the same sid in the current document. Statements without an sid cannot be overwritten."
+  type        = string
+  default     = null
+}
+
+variable "policy_document_source_json" {
+  description = "An IAM policy document to import as a base for the current policy document. Statements with non-blank sids in the current policy document will overwrite statements with the same sid in the source json. Statements without an sid cannot be overwritten."
+  type        = string
+  default     = null
+}
+
 variable "service_principals" {
   description = "A list of AWS service principals that should be given permissions to use this CMK."
-  type = list(object({
-    arn = string,
-    conditions = set(object({
+  type = map(object({
+    actions = list(string),
+    conditions = list(object({
       test     = string,
       variable = string,
-      values   = set(string)
+      values   = list(string)
     }))
   }))
-  default = []
+  default = {}
 }
 
 variable "deletion_window_in_days" {
   description = "The number of days to retain this CMK after it has been marked for deletion."
   type        = number
   default     = 30
+
+  validation {
+    condition     = var.deletion_window_in_days >= 7 && var.deletion_window_in_days <= 30
+    error_message = "The value is expected to be in the range (7 - 30)."
+  }
 }
 
 variable "enable_key_rotation" {
