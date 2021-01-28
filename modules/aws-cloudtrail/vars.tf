@@ -98,32 +98,28 @@ variable "data_logging_include_management_events" {
   default     = true
 }
 
-variable "data_logging_resource_type" {
+variable "data_resources" {
   # https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_DataResource.html#API_DataResource_Contents
   # The resource type in which you want to log data events. You can specify `AWS::S3::Object` or `AWS::Lambda::Function` resources.
   # The `AWS::S3Outposts::Object` resource type is not valid in basic event selectors. To log data events on this resource type, use advanced event selectors.
-  description = "The resource type in which you want to log data events.  Requires `data_logging_include_management_events` to be set to `true`. Possible values are: `AWS::S3::Object`, `AWS::S3Outposts::Object`, or `AWS::Lambda::Function`."
-  type        = string
-  default     = "AWS::S3::Object"
-
-  validation {
-    condition     = var.data_logging_resource_type == "AWS::S3::Object" || var.data_logging_resource_type == "AWS::S3Outposts::Object" || var.data_logging_resource_type == "AWS::Lambda::Function"
-    error_message = "The value for `data_logging_resource_type` must be one of `AWS::S3::Object`, `AWS::S3Outposts::Object`, or `AWS::Lambda::Function`."
-  }
-}
-
-variable "data_logging_resource_values" {
-  # https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_DataResource.html#API_DataResource_Contents
   # To log data events for all objects in all S3 buckets in your AWS account, specify the prefix as `arn:aws:s3:::`
   # To log data events for all objects in an S3 bucket, specify the bucket and an empty object prefix such as `arn:aws:s3:::bucket-1/`. The trail logs data events for all objects in this S3 bucket.
   # To log data events for specific objects, specify the S3 bucket and object prefix such as `arn:aws:s3:::bucket-1/example-images`. The trail logs data events for objects in this S3 bucket that match the prefix.
   # To log data events for all functions in your AWS account, specify the prefix as `arn:aws:lambda`.
   # To log data events for a specific Lambda function, specify the function ARN.
-  description = "A list of resource ARNs for data event logging.  See https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_DataResource.html#API_DataResource_Contents for how to specify values."
-  type        = list(string)
-  default = [
-    "arn:aws:s3:::"
-  ]
+  # https://aws.amazon.com/cloudtrail/pricing/
+  # Data events provide visibility into the resource ("data plane") operations performed on or within the resource itself. Data events are often high volume activities and include operations such as Amazon S3 object level APIs and Lambda function invoke API. For example, CloudTrail delivers data events for AWS Lambda Invoke API calls and Amazon S3 object level APIs such as Get, Put, Delete and List actions. Data events are recorded only for the Lambda functions and S3 buckets you specify and are charged at $0.10 per 100,000 events.
+  description = "A map of resource types to values in which you want to log data events.  Requires `data_logging_include_management_events` to be set to `true`. Possible values are: `AWS::S3::Object`, `AWS::S3Outposts::Object`, or `AWS::Lambda::Function`.  See https://docs.aws.amazon.com/awscloudtrail/latest/APIReference/API_DataResource.html#API_DataResource_Contents for more details."
+  type        = map(set(string))
+  default = {
+    "AWS::S3::Object"       = ["arn:aws:s3:::"]
+    "AWS::Lambda::Function" = ["arn:aws:lambda"]
+  }
+
+  validation {
+    condition     = length(setsubtract(keys(var.data_resources), ["AWS::S3::Object", "AWS::Lambda::Function"])) == 0
+    error_message = "The only supported keys are `AWS::S3::Object` `AWS::Lambda::Function`."
+  }
 }
 
 variable "enable_insight_logging" {

@@ -80,15 +80,15 @@ resource "aws_cloudtrail" "cloudtrail" {
   # https://docs.aws.amazon.com/awscloudtrail/latest/userguide/WhatIsCloudTrail-Limits.html
   # Event selectors |	5 per trail	| This limit cannot be increased.
   dynamic "event_selector" {
-    for_each = var.enable_data_logging ? ["once"] : []
+    for_each = var.enable_data_logging ? [1] : []
     content {
       read_write_type           = var.data_logging_read_write_type
       include_management_events = var.data_logging_include_management_events
       dynamic "data_resource" {
-        for_each = var.enable_data_logging ? ["once"] : []
+        for_each = var.data_resources
         content {
-          type   = var.data_logging_resource_type
-          values = var.data_logging_resource_values
+          type   = data_resource.key
+          values = data_resource.value
         }
       }
     }
