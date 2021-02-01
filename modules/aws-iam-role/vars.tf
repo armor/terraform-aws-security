@@ -26,3 +26,21 @@ variable "iam_policy_arns" {
   type        = set(string)
   default     = []
 }
+
+variable "assume_role" {
+  description = "(optional) describe your variable"
+  type        = bool
+  default     = true
+}
+
+variable "assume_role_with_saml" {
+  description = "(optional) describe your variable"
+  type        = bool
+  default     = false
+}
+
+variable "assume_role_with_web_identity" {
+  description = "(optional) describe your variable"
+  type        = bool
+  default     = false
+}

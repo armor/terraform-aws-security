@@ -6,10 +6,19 @@ terraform {
   required_version = ">= 0.12"
 }
 
+locals {
+  assume_role_actions = setunion(
+    var.assume_role ? ["sts:AssumeRole"] : [],
+    var.assume_role_with_saml ? ["sts:AssumeRoleWithSAML"] : [],
+    var.assume_role_with_web_identity ? ["sts:AssumeRoleWithWebIdentity"] : []
+  )
+}
+
 data "aws_iam_policy_document" "assume_role_policy" {
   statement {
+    sid     = "AssumeRole${replace(title(replace(var.name, "_", " ")), " ", "")}"
     effect  = "Allow"
-    actions = ["sts:AssumeRole"]
+    actions = local.assume_role_actions
 
     dynamic "principals" {
       for_each = length(var.aws_principals) > 0 ? [1] : []
