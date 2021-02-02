@@ -3,6 +3,12 @@ variable "name" {
   type        = string
 }
 
+variable "path" {
+  description = "Path in which to create the policy. See [IAM Identifiers](https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html) for more information."
+  type        = string
+  default     = "/"
+}
+
 variable "service_principals" {
   description = "A list service principals permitted to assume this role."
   type        = set(string)

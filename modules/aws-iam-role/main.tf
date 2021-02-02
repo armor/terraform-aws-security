@@ -16,7 +16,7 @@ locals {
 
 data "aws_iam_policy_document" "assume_role_policy" {
   statement {
-    sid     = "AssumeRole${replace(title(replace(var.name, "_", " ")), " ", "")}"
+    sid     = "AssumeRole${replace(title(replace(var.name, "/[_-]+/", " ")), " ", "")}"
     effect  = "Allow"
     actions = local.assume_role_actions
 
@@ -61,6 +61,7 @@ data "aws_iam_policy_document" "assume_role_policy" {
 
 resource "aws_iam_role" "role" {
   name               = var.name
+  path               = var.path
   assume_role_policy = data.aws_iam_policy_document.assume_role_policy.json
 }
 
