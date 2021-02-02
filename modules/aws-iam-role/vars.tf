@@ -54,7 +54,7 @@ variable "assume_role_with_web_identity" {
 variable "require_mfa" {
   type        = bool
   description = "(optional) describe your variable"
-  default     = false
+  default     = true
 }
 
 variable "tags" {
