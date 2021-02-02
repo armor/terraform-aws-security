@@ -40,14 +40,14 @@ module "roles" {
   role_name_static_prefix = var.role_name_static_prefix
 
   # we exclude budget_management_tooling_readonly policy from being deployed
-  exclude_policies = setunion([
+  excluded_policy_names = setunion([
     # the aws_principals must be updated to not reference 123456789012.
     # The value of arn:aws:iam::123456789012:root be denied by AWS. with the error:
     # Assume Role Policy: MalformedPolicyDocument: Invalid principal in policy: "AWS":"arn:aws:iam::123456789012:root"
-    # make sure to make that change before removing this custom policies from the `exclude_policies` list
+    # make sure to make that change before removing this custom policies from the `excluded_policy_names` list
     "budget_management_tooling_readonly",
     "budget_management_users_readonly",
-  ], var.exclude_policies)
+  ], var.excluded_policy_names)
 
   developer_include_managed_policies = var.developer_include_managed_policies
 

@@ -50,7 +50,7 @@ variable "include_default_policies" {
   ]
 }
 
-variable "exclude_policies" {
+variable "excluded_policy_names" {
   description = "An explicit list of policies to exclude. If a policy name is in this list then it will never be deployed. This setting will override `include_default_policies`."
   type        = set(string)
   default = [
