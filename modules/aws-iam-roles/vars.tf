@@ -245,6 +245,15 @@ variable "policy_custom" {
     #   role_requires_mfa = true
     # }
   }
+
+  validation {
+    # ensure that `policy_custom` is an empty map or that all custom policies contain at least 1 principal (required by AWS) - https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_grammar.html#policies-grammar-notes
+    # > The principal_block element is required in resource-based policies (for example, in Amazon S3 bucket policies) and in trust policies for IAM roles. It must not be included in identity-based policies.
+    # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html
+    # when validating a map(any) we must wrap all references to the map in a try to avoid var.policy_custom is empty map of dynamic
+    condition     = try(length(var.policy_custom), 0) == 0 || try([for key, value in try(var.policy_custom, {}) : length(setunion(lookup(value, "service_principals", []), lookup(value, "aws_principals", []), lookup(value, "federated_principals", [])))][0], 1) > 0
+    error_message = "You must define at least one value in `service_principals`, `aws_principals` or `federated_principals` for each custom policy."
+  }
 }
 
 variable "tags" {

@@ -8,15 +8,12 @@ terraform {
 
 locals {
   policies = {
-    # first: exclude any policies matching values in the `exclude_policies` list.
-    # second: exclude any policies that do not contain at least 1 principal (required by AWS) - https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_grammar.html#policies-grammar-notes
-    # > The principal_block element is required in resource-based policies (for example, in Amazon S3 bucket policies) and in trust policies for IAM roles. It must not be included in identity-based policies.
-    # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_principal.html
-    for key, value in local.merged_policies : key => value if ! contains(var.exclude_policies, key) && length(setunion(lookup(value, "service_principals", []), lookup(value, "aws_principals", []), lookup(value, "federated_principals", []))) > 0
+    # exclude any policies matching values in the `exclude_policies` list.
+    for key, value in local.merged_policies : key => value if ! contains(var.exclude_policies, key)
   }
   merged_policies = merge(local.included_default_policies, var.policy_custom)
   included_default_policies = {
-    # first: include any policies matching values in the `include_default_policies` list.
+    # include any policies matching values in the `include_default_policies` list.
     for key, value in local.default_policies : key => value if contains(var.include_default_policies, key)
   }
 
