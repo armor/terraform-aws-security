@@ -50,6 +50,10 @@ module "roles" {
   ], var.exclude_policies)
 
   developer_include_managed_policies = var.developer_include_managed_policies
+
+  tags = {
+    cost_center = "engineering"
+  }
 }
 
 data "aws_caller_identity" "current" {

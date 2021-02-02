@@ -246,3 +246,9 @@ variable "policy_custom" {
     # }
   }
 }
+
+variable "tags" {
+  description = "A key-value map of tags to apply to this resource."
+  type        = map(string)
+  default     = {}
+}

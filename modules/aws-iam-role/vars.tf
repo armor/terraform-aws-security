@@ -56,3 +56,9 @@ variable "require_mfa" {
   description = "(optional) describe your variable"
   default     = false
 }
+
+variable "tags" {
+  description = "A key-value map of tags to apply to this resource."
+  type        = map(string)
+  default     = {}
+}

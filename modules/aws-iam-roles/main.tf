@@ -114,6 +114,8 @@ module "role" {
   iam_policy_arns = compact(flatten(setproduct([module.policy[each.key].arn], lookup(each.value, "iam_policy_arns", []))))
 
   require_mfa = lookup(each.value, "role_requires_mfa", true)
+
+  tags = var.tags
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
