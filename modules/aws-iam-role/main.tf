@@ -46,6 +46,16 @@ data "aws_iam_policy_document" "assume_role_policy" {
         identifiers = var.federated_principals
       }
     }
+
+    dynamic "condition" {
+      for_each = var.require_mfa ? [1] : []
+
+      content {
+        test     = "Bool"
+        values   = ["true"]
+        variable = "aws:MultiFactorAuthPresent"
+      }
+    }
   }
 }
 
