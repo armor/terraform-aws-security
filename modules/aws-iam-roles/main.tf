@@ -13,8 +13,8 @@ locals {
   }
   merged_policies = merge(local.included_default_policies, var.policy_custom)
   included_default_policies = {
-    # include any policies matching values in the `include_default_policies` list.
-    for key, value in local.default_policies : key => value if contains(var.include_default_policies, key)
+    # include any policies matching values in the `included_default_policy_names` list.
+    for key, value in local.default_policies : key => value if contains(var.included_default_policy_names, key)
   }
 
   default_policies = {
@@ -163,7 +163,7 @@ data "aws_iam_policy_document" "developer_from_external_accounts" {
 }
 
 data "aws_iam_policy" "developer_include_policies" {
-  for_each = contains(var.include_default_policies, "developer_from_external_accounts") ? local.developer_include_policies : []
+  for_each = contains(var.included_default_policy_names, "developer_from_external_accounts") ? local.developer_include_policies : []
   arn      = format("arn:aws:iam::aws:policy/%s", each.key)
 }
 
@@ -171,7 +171,7 @@ resource "aws_iam_policy" "developer_include_policies_copy" {
   # CSPM will flag using policies that are directly managed by aws as they can change without warning
   # so we make a copy at the point in time that the roles are created.
   # these are dynamically included in local.default_policies.developer_from_external_accounts.iam_policy_arns
-  for_each    = contains(var.include_default_policies, "developer_from_external_accounts") ? local.developer_include_policies : []
+  for_each    = contains(var.included_default_policy_names, "developer_from_external_accounts") ? local.developer_include_policies : []
   name        = "${lookup(data.aws_iam_policy.developer_include_policies[each.key], "name", each.key)}Copy"
   description = "${lookup(data.aws_iam_policy.developer_include_policies[each.key], "description", each.key)} (Copy)"
   path        = var.default_path

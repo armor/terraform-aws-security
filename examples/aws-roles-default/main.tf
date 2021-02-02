@@ -31,7 +31,7 @@ module "roles" {
   auto_deploy_service_principals = []
 
   # we only include the deny_all policy from the defaults
-  include_default_policies = var.include_default_policies
+  included_default_policy_names = var.included_default_policy_names
 
   # we define budget_management_tooling_readonly policy in `my_custom_policies`
   policy_custom = var.my_custom_policies

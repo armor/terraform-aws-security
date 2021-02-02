@@ -62,7 +62,7 @@ variable "role_name_static_prefix" {
   default     = "example-"
 }
 
-variable "include_default_policies" {
+variable "included_default_policy_names" {
   description = "An explicit list of default polices to include. If a default policy is not listed in this array then it will not be deployed."
   type        = set(string)
   default = [
@@ -72,7 +72,7 @@ variable "include_default_policies" {
 }
 
 variable "excluded_policy_names" {
-  description = "An explicit list of policies to exclude. If a policy name is in this list then it will never be deployed. This setting will override `include_default_policies`."
+  description = "An explicit list of policies to exclude. If a policy name is in this list then it will never be deployed. This setting will override `included_default_policy_names`."
   type        = set(string)
   default = [
     "deny_all",
