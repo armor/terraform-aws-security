@@ -34,26 +34,26 @@ variable "iam_policy_arns" {
 }
 
 variable "assume_role" {
-  description = "(optional) describe your variable"
+  description = "Adds the policy action to include `sts:AssumeRole`."
   type        = bool
   default     = true
 }
 
 variable "assume_role_with_saml" {
-  description = "(optional) describe your variable"
+  description = "Adds the policy action to include `sts:AssumeRoleWithSAML`."
   type        = bool
   default     = false
 }
 
 variable "assume_role_with_web_identity" {
-  description = "(optional) describe your variable"
+  description = "Adds the policy action to include `sts:AssumeRoleWithWebIdentity`."
   type        = bool
   default     = false
 }
 
 variable "require_mfa" {
   type        = bool
-  description = "(optional) describe your variable"
+  description = "Include a condition to require `aws:MultiFactorAutoPresent` to be set to `true`."
   default     = true
 }
 
