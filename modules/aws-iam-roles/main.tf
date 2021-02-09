@@ -9,7 +9,7 @@ terraform {
 locals {
   policies = {
     # exclude any policies matching values in the `excluded_policy_names` list.
-    for key, value in local.merged_policies : key => value if ! contains(var.excluded_policy_names, key)
+    for key, value in local.merged_policies : key => value if !contains(var.excluded_policy_names, key)
   }
   merged_policies = merge(local.included_default_policies, var.policy_custom)
   included_default_policies = {
