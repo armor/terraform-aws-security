@@ -15,9 +15,10 @@ variable "policy_document_source_json" {
   default     = null
 }
 
-variable "service_principals" {
-  description = "A list of AWS service principals that should be given permissions to use this CMK."
+variable "service_principal_policy_statements" {
+  description = "A map of policy statements that will be applied to the CMK key policy. The key should be the statement's SID and the value should be the statement configuration object."
   type = map(object({
+    service = string,
     actions = list(string),
     conditions = list(object({
       test     = string,
@@ -25,7 +26,6 @@ variable "service_principals" {
       values   = list(string)
     }))
   }))
-  default = {}
 }
 
 variable "deletion_window_in_days" {
@@ -49,6 +49,12 @@ variable "customer_master_key_spec" {
   description = "Whether the key contains a symmetric key or an asymmetric key pair and the encryption algorithms or signing algorithms that the key supports. Any of `SYMMETRIC_DEFAULT`, `RSA_2048`, `RSA_3072`, `RSA_4096`, `ECC_NIST_P256`, `ECC_NIST_P384`, `ECC_NIST_P521`, or `ECC_SECG_P256K1`."
   type        = string
   default     = "SYMMETRIC_DEFAULT"
+}
+
+variable "key_usage" {
+  description = "Specifies the intended use of the key."
+  type        = string
+  default     = "ENCRYPT_DECRYPT"
 }
 
 variable "tags" {
