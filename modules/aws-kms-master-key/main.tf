@@ -15,6 +15,7 @@ resource "aws_kms_key" "master_key" {
   policy                   = data.aws_iam_policy_document.policy.json
   deletion_window_in_days  = var.deletion_window_in_days
   customer_master_key_spec = var.customer_master_key_spec
+  key_usage                = var.key_usage
   enable_key_rotation      = var.enable_key_rotation
   tags                     = var.tags
 }
@@ -43,10 +44,10 @@ data "aws_iam_policy_document" "policy" {
 
   # Allow service principals specific access to the CMK.
   dynamic "statement" {
-    for_each = var.service_principals
+    for_each = var.service_principal_policy_statements
 
     content {
-      sid = "AllowServicePrincipalAccess-${md5(jsonencode(statement.value))}"
+      sid = statement.key
 
       effect    = "Allow"
       resources = ["*"]
@@ -55,7 +56,7 @@ data "aws_iam_policy_document" "policy" {
 
       principals {
         type        = "Service"
-        identifiers = [statement.key]
+        identifiers = [statement.value.service]
       }
 
       dynamic "condition" {
