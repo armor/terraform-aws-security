@@ -26,6 +26,7 @@ variable "service_principal_policy_statements" {
       values   = list(string)
     }))
   }))
+  default = {}
 }
 
 variable "deletion_window_in_days" {
