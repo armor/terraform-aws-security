@@ -10,13 +10,14 @@ terraform {
 # CREATE THE CUSTOMER MASTER KEY
 # ----------------------------------------------------------------------------------------------------------------------
 
+# Ignore key rotation settings as not all key types support it and this is a generic module.
 resource "aws_kms_key" "master_key" {
   description              = "The ${var.name} customer master key."
   policy                   = data.aws_iam_policy_document.policy.json
   deletion_window_in_days  = var.deletion_window_in_days
   customer_master_key_spec = var.customer_master_key_spec
   key_usage                = var.key_usage
-  enable_key_rotation      = var.enable_key_rotation
+  enable_key_rotation      = var.enable_key_rotation # tfsec:ignore:AWS019
   tags                     = var.tags
 }
 
