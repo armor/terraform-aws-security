@@ -16,7 +16,7 @@ locals {
   threatintelset_name = "ThreatIntelSet"
   threatintelset_key  = "threatintelset.txt"
 
-  # TFlint has a bug with AWS modules and heredoc, as a workaround you can add the config into local
+  # TFlint has a bug with AWS modules and heredoc, as a workaround you can define the variable inside local
   # https://github.com/terraform-linters/tflint/issues/1029
   policy = <<-TEMPLATE
   {
@@ -54,7 +54,7 @@ locals {
 # ----------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_policy" "enable_guardduty" {
-  name        = "enable-guardduty"
+  name        = "enable-guardduty-${var.aws_region}"
   path        = "/"
   description = "Allows setup and configuration of GuardDuty"
   policy      = local.policy
@@ -65,7 +65,7 @@ resource "aws_iam_policy" "enable_guardduty" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_group" "guardduty" {
-  name = var.group_name
+  name = "${var.group_name}-${var.aws_region}"
   path = "/"
 }
 
@@ -81,7 +81,7 @@ resource "aws_iam_group_policy_attachment" "access" {
 }
 
 resource "aws_iam_group_membership" "guardduty" {
-  name  = "guardduty-admin-members"
+  name  = "guardduty-admin-members-${var.aws_region}"
   group = aws_iam_group.guardduty.name
   users = var.member_list
 }

@@ -6,7 +6,6 @@ variable "aws_account_id" {
 variable "aws_region" {
   type        = string
   description = "Which region guardduty will be deployed."
-  default     = "ap-southeast-1"
 }
 
 variable "member_list" {
