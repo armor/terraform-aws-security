@@ -3,14 +3,9 @@ variable "aws_account_id" {
   description = "The AWS account id permitted to assume guardduty role."
 }
 
-variable "aws_region" {
-  type        = string
-  description = "Which region guardduty will be deployed."
-}
-
-variable "member_list" {
+variable "aws_regions" {
   type        = list(any)
-  description = "The list of member accounts to be added to guardduty."
+  description = "List of regions where guardduty will be deployed."
 }
 
 variable "group_name" {
@@ -23,6 +18,15 @@ variable "bucket_name" {
   type        = string
   description = "Name of the S3 bucket to use."
   default     = ""
+}
+
+variable "logging" {
+  type        = map(any)
+  description = "Enable logging in S3 bucket."
+  default = {
+    target_bucket = ""
+    target_prefix = ""
+  }
 }
 
 variable "detector_enable" {

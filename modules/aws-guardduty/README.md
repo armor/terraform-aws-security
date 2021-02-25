@@ -31,10 +31,11 @@ The below outlines the current parameters and defaults.
 | Name | Description | Type | Default | Required |
 |------|-------------|:----:|:-------:|:--------:|
 |aws_account_id|The AWS account id permitted to assume guardduty role.|string|""|Yes|
-|aws_region|Which region guardduty will be deployed.|string|""|Yes|
-|member_list|The list of member accounts to be added to guardduty.|list|""|Yes|
+|aws_regions|List of regions where guardduty will be deployed.|list|""|Yes|
+|member_list|The list of member accounts to be added to guardduty.|map(string)|""|Yes|
 |group_name|The guardduty group's name.|string|guardduty-admin|No|
 |bucket_name|Name of the S3 bucket to use|string|""|Yes (If ipset or threat intel set is enabled)|
+|logging|Enable logging in S3 bucket.|map|default = {target_bucket = "", target_prefix = ""|No|
 |detector_enable|Enable monitoring|bool|true|Yes|
 |has_ipset|Enable IPSet|bool|false|No|
 |has_threatintelset|Enable ThreatIntelSet|bool|false|No|
@@ -83,8 +84,7 @@ module "guardduty" {
   source = "git::git@github.com:quantum-sec/package-aws-security.git//modules/aws-guardduty?ref=2.0.1"
 
   aws_account_id = "xxxxxxxxxxxx"
-  aws_region     = "ap-southeast-1"
-  member_list    = [xxxxxxxxxxxx, xxxxxxxxxxxx, xxxxxxxxxxxx]
+  aws_region     = ["ap-southeast-1"]
 }
 ```
 
@@ -118,8 +118,7 @@ module "guardduty" {
   source = "git::git@github.com:quantum-sec/package-aws-security.git//modules/aws-guardduty?ref=2.0.1"
 
   aws_account_id        = "xxxxxxxxxxxx"
-  aws_region            = "ap-southeast-1"
-  member_list           = [xxxxxxxxxxxx, xxxxxxxxxxxx, xxxxxxxxxxxx]
+  aws_region            = ["ap-southeast-1"]
 
   bucket_name           = "s3-audit-guardduty"
 
