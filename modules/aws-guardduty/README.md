@@ -94,6 +94,46 @@ To apply that:
 ▶ terraform apply
 ```
 
+#### Auto add user
+
+A GuardDuty instance configured as a Master that invites a list of members:
+
+```tf
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# DEPLOY GUARDDUTY
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+terraform {
+  required_version = ">= 0.14.6"
+
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = "~> 3.29"
+    }
+  }
+}
+
+# ---------------------------------------------------------------------------------------------------------------------
+# CREATE AND ENABLE GUARDDUTY
+# ---------------------------------------------------------------------------------------------------------------------
+
+module "guardduty" {
+  source = "git::git@github.com:quantum-sec/package-aws-security.git//modules/aws-guardduty?ref=2.0.1"
+
+  aws_account_id = "xxxxxxxxxxxx"
+  aws_region     = ["ap-southeast-1"]
+  member_list    = {xxxxxxxxxxxx = "xxx@xxx.com", yyyyyyyyyyyy = "yyy@yyy.com"}
+
+}
+```
+
+To apply that:
+
+```text
+▶ terraform apply
+```
+
 #### With ipset and threatintelset enabled
 
 A GuardDuty instance configured as a Master that invites a list of members:
@@ -119,6 +159,7 @@ module "guardduty" {
 
   aws_account_id        = "xxxxxxxxxxxx"
   aws_region            = ["ap-southeast-1"]
+  member_list           = {xxxxxxxxxxxx = "xxx@xxx.com", yyyyyyyyyyyy = "yyy@yyy.com"}
 
   bucket_name           = "s3-audit-guardduty"
 

@@ -14,6 +14,12 @@ variable "group_name" {
   default     = "guardduty-admin"
 }
 
+variable "member_list" {
+  type        = map(string)
+  description = "The list of member accounts to be added to guardduty."
+  default     = {}
+}
+
 variable "bucket_name" {
   type        = string
   description = "Name of the S3 bucket to use."
