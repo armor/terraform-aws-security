@@ -11,48 +11,55 @@ Source: https://aws.amazon.com/guardduty/
 
 ## AWS GuardDuty Terraform
 
+### Requirements
+
+| Name | Version |
+|------|---------|
+| terraform | >= 0.14.6 |
+
 ### Resources docs
 
 These are the documentation for the resource that where implemented in our Terraform package:
 
-- [`aws_guardduty_detector`](https://www.terraform.io/docs/providers/aws/r/guardduty_detector.html) - A resource to enable GuardDuty monitoring.
-- [`aws_guardduty_ipset`](https://www.terraform.io/docs/providers/aws/r/guardduty_ipset.html) - IPSet is a list of trusted IP addresses.
-- [`aws_guardduty_threatintelset`](https://www.terraform.io/docs/providers/aws/r/guardduty_threatintelset.html) - ThreatIntelSet is a list of known malicious IP addresses.
+| Name |Description|
+|------|-----------|
+| [aws_guardduty_detector](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_detector) | A resource to enable GuardDuty monitoring. |
+| [aws_guardduty_ipset](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_ipset) | IPSet is use to define the list of trusted IP addresses. |
+| [aws_guardduty_member](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_member) | This is use to accept member invitation. |
+| [aws_guardduty_organization_admin_account](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_organization_admin_account) | Manages a GuardDuty Organization Admin Account.  |
+| [aws_guardduty_organization_configuration](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_organization_configuration) | Manages the GuardDuty Organization Configuration in the current AWS Region. |
+| [aws_guardduty_threatintelset](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/guardduty_threatintelset) | ThreatIntelSet is use to define the list of known malicious IP addresses. |
+| [aws_s3_bucket_object](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/s3_bucket_object) | Provides a S3 bucket object resource. |
 
 ### Caveats
 Due to the way in which Terraform deals with the AWS API, it is not sufficient to alter the local contents of `iplist.txt` and
 do another `terraform apply` - if the file is present in the target bucket, Terraform concludes it does not have any work to do,
 so you will need to manually delete the file first.
 
+The terraform code would not be creating the S3 bucket, you have to ensure that your guardduty admin account has access to the s3 bucket that would be use to store both the ip list and threat intel list.
+
 ### Inputs
 
 The below outlines the current parameters and defaults.
 
 | Name | Description | Type | Default | Required |
-|------|-------------|:----:|:-------:|:--------:|
-|aws_account_id|The AWS account id permitted to assume guardduty role.|string|""|Yes|
-|aws_regions|List of regions where guardduty will be deployed.|list|""|Yes|
-|member_list|The list of member accounts to be added to guardduty.|map(string)|""|Yes|
-|group_name|The guardduty group's name.|string|guardduty-admin|No|
-|bucket_name|Name of the S3 bucket to use|string|""|Yes (If ipset or threat intel set is enabled)|
-|logging|Enable logging in S3 bucket.|map|default = {target_bucket = "", target_prefix = ""|No|
-|detector_enable|Enable monitoring|bool|true|Yes|
-|has_ipset|Enable IPSet|bool|false|No|
-|has_threatintelset|Enable ThreatIntelSet|bool|false|No|
-|ipset_activate|Specifies whether GuardDuty is to start using the uploaded IPSet|bool|true|No|
-|ipset_format|The format of the file that contains the IPSet|string|TXT|No|
-|ipset_iplist|IPSet list of trusted IP addresses|list|[]|No|
-|threatintelset_activate|Specifies whether GuardDuty is to start using the uploaded ThreatIntelSet|bool|true|No|
-|threatintelset_format|The format of the file that contains the ThreatIntelSet|string|TXT|No|
-|threatintelset_iplist|ThreatIntelSet list of known malicious IP addresses|list|[]|No|
-
-### Outputs
-
-|Name|Description|
-|------------|---------------------|
-|guardduty_account_id|The AWS account ID of the GuardDuty detector|
-|guardduty_arn|Amazon Resource Name (ARN) of the GuardDuty detector.|
-|guardduty_id|The ID of the GuardDuty detector|
+|------|-------------|------|---------|:--------:|
+| aws\_account\_id | The AWS account id permitted to assume guardduty role. | `string` | n/a | yes |
+| aws\_regions | List of regions where guardduty will be deployed. | `list(any)` | n/a | yes |
+| bucket\_name | Name of the S3 bucket to use. | `string` | `""` | no |
+| detector\_enable | Enable monitoring and feedback reporting. | `bool` | `true` | no |
+| group\_name | The guardduty group's name. | `string` | `"guardduty-admin"` | no |
+| has\_ipset | Whether to include IPSet. | `bool` | `false` | no |
+| has\_threatintelset | Whether to include ThreatIntelSet. | `bool` | `false` | no |
+| ipset\_activate | Specifies whether GuardDuty is to start using the uploaded IPSet. | `bool` | `true` | no |
+| ipset\_format | The format of the file that contains the IPSet. | `string` | `"TXT"` | no |
+| ipset\_iplist | IPSet list of trusted IP addresses. | `string` | `""` | no |
+| logging | Enable logging in S3 bucket. | `map(any)` | <pre>{<br>  "target_bucket": "",<br>  "target_prefix": ""<br>}</pre> | no |
+| main\_region | The primary region that the would be use for deployment. | `string` | n/a | yes |
+| member\_list | The list of member accounts to be added to guardduty. | `map(string)` | `{}` | no |
+| threatintelset\_activate | Specifies whether GuardDuty is to start using the uploaded ThreatIntelSet. | `bool` | `true` | no |
+| threatintelset\_format | The format of the file that contains the ThreatIntelSet. | `string` | `"TXT"` | no |
+| threatintelset\_iplist | ThreatIntelSet list of known malicious IP addresses. | `string` | `""` | no |
 
 ### Examples
 
@@ -84,6 +91,7 @@ module "guardduty" {
   source = "git::git@github.com:quantum-sec/package-aws-security.git//modules/aws-guardduty?ref=2.0.1"
 
   aws_account_id = "xxxxxxxxxxxx"
+  main_region   = "ap-southeast-1"
   aws_region     = ["ap-southeast-1"]
 }
 ```
@@ -122,6 +130,7 @@ module "guardduty" {
   source = "git::git@github.com:quantum-sec/package-aws-security.git//modules/aws-guardduty?ref=2.0.1"
 
   aws_account_id = "xxxxxxxxxxxx"
+  main_region    = "ap-southeast-1"
   aws_region     = ["ap-southeast-1"]
   member_list    = {xxxxxxxxxxxx = "xxx@xxx.com", yyyyyyyyyyyy = "yyy@yyy.com"}
 
@@ -158,6 +167,7 @@ module "guardduty" {
   source = "git::git@github.com:quantum-sec/package-aws-security.git//modules/aws-guardduty?ref=2.0.1"
 
   aws_account_id        = "xxxxxxxxxxxx"
+  main_region           = "ap-southeast-1"
   aws_region            = ["ap-southeast-1"]
   member_list           = {xxxxxxxxxxxx = "xxx@xxx.com", yyyyyyyyyyyy = "yyy@yyy.com"}
 

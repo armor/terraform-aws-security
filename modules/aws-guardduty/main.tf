@@ -7,7 +7,7 @@ terraform {
 }
 
 provider "aws" {
-  region = "ap-southeast-1"
+  region = var.main_region
 }
 
 locals {
@@ -18,34 +18,6 @@ locals {
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
-# SETUP S3 BUCKEET
-# ----------------------------------------------------------------------------------------------------------------------
-
-resource "aws_s3_bucket" "security" {
-  count = (var.has_ipset || var.has_threatintelset) ? 1 : 0
-
-  bucket_prefix = var.bucket_name
-  acl           = "private"
-
-  logging {
-    target_bucket = var.logging["target_bucket"]
-    target_prefix = var.logging["target_prefix"]
-  }
-
-  lifecycle {
-    prevent_destroy = true
-  }
-
-  server_side_encryption_configuration {
-    rule {
-      apply_server_side_encryption_by_default {
-        sse_algorithm = "aws:kms"
-      }
-    }
-  }
-}
-
-# ----------------------------------------------------------------------------------------------------------------------
 # SETUP IPSET
 # ----------------------------------------------------------------------------------------------------------------------
 
@@ -53,7 +25,7 @@ resource "aws_s3_bucket_object" "ipset" {
   count                  = var.has_ipset ? 1 : 0
   acl                    = "public-read"
   content                = var.ipset_iplist
-  bucket                 = aws_s3_bucket.security[0].id
+  bucket                 = var.bucket_name
   key                    = local.ipset_key
   etag                   = md5(var.ipset_iplist)
   server_side_encryption = "aws:kms"
@@ -67,8 +39,953 @@ resource "aws_s3_bucket_object" "threatintelset" {
   count                  = var.has_threatintelset ? 1 : 0
   acl                    = "public-read"
   content                = var.threatintelset_iplist
-  bucket                 = aws_s3_bucket.security[0].id
+  bucket                 = var.bucket_name
   key                    = local.threatintelset_key
   etag                   = md5(var.threatintelset_iplist)
   server_side_encryption = "aws:kms"
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# US EAST (N. VIRGINIA)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "useast1"
+  region = "us-east-1"
+}
+
+resource "aws_guardduty_detector" "useast1" {
+  count    = contains(var.aws_regions, "us-east-1") ? 1 : 0
+  provider = aws.useast1
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "useast1" {
+  count            = contains(var.aws_regions, "us-east-1") ? 1 : 0
+  provider         = aws.useast1
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "useast1" {
+  depends_on  = [aws_guardduty_organization_admin_account.useast1]
+  count       = contains(var.aws_regions, "us-east-1") ? 1 : 0
+  provider    = aws.useast1
+  auto_enable = true
+  detector_id = aws_guardduty_detector.useast1[0].id
+}
+
+resource "aws_guardduty_member" "useast1" {
+  depends_on = [aws_guardduty_organization_admin_account.useast1]
+  for_each   = contains(var.aws_regions, "us-east-1") ? var.member_list : {}
+  provider   = aws.useast1
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.useast1[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "useast1" {
+  count       = contains(var.aws_regions, "us-east-1") && var.has_ipset ? 1 : 0
+  provider    = aws.useast1
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.useast1[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "useast1" {
+  count       = contains(var.aws_regions, "us-east-1") && var.has_threatintelset ? 1 : 0
+  provider    = aws.useast1
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.useast1[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# US EAST (OHIO)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "useast2"
+  region = "us-east-2"
+}
+
+resource "aws_guardduty_detector" "useast2" {
+  count    = contains(var.aws_regions, "us-east-2") ? 1 : 0
+  provider = aws.useast2
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "useast2" {
+  count            = contains(var.aws_regions, "us-east-2") ? 1 : 0
+  provider         = aws.useast2
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "useast2" {
+  depends_on  = [aws_guardduty_organization_admin_account.useast2]
+  count       = contains(var.aws_regions, "us-east-2") ? 1 : 0
+  provider    = aws.useast2
+  auto_enable = true
+  detector_id = aws_guardduty_detector.useast2[0].id
+}
+
+resource "aws_guardduty_member" "useast2" {
+  depends_on = [aws_guardduty_organization_admin_account.useast2]
+  for_each   = contains(var.aws_regions, "us-east-2") ? var.member_list : {}
+  provider   = aws.useast2
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.useast2[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "useast2" {
+  count       = contains(var.aws_regions, "us-east-2") && var.has_ipset ? 1 : 0
+  provider    = aws.useast2
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.useast2[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "useast2" {
+  count       = contains(var.aws_regions, "us-east-2") && var.has_threatintelset ? 1 : 0
+  provider    = aws.useast2
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.useast2[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# US WEST (N. CALIFORNIA)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "uswest1"
+  region = "us-west-1"
+}
+
+resource "aws_guardduty_detector" "uswest1" {
+  count    = contains(var.aws_regions, "us-west-1") ? 1 : 0
+  provider = aws.uswest1
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "uswest1" {
+  count            = contains(var.aws_regions, "us-west-1") ? 1 : 0
+  provider         = aws.uswest1
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "uswest1" {
+  depends_on  = [aws_guardduty_organization_admin_account.uswest1]
+  count       = contains(var.aws_regions, "us-west-1") ? 1 : 0
+  provider    = aws.uswest1
+  auto_enable = true
+  detector_id = aws_guardduty_detector.uswest1[0].id
+}
+
+resource "aws_guardduty_member" "uswest1" {
+  depends_on = [aws_guardduty_organization_admin_account.uswest1]
+  for_each   = contains(var.aws_regions, "us-west-1") ? var.member_list : {}
+  provider   = aws.uswest1
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.uswest1[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "uswest1" {
+  count       = contains(var.aws_regions, "us-west-1") && var.has_ipset ? 1 : 0
+  provider    = aws.uswest1
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.uswest1[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "uswest1" {
+  count       = contains(var.aws_regions, "us-west-1") && var.has_threatintelset ? 1 : 0
+  provider    = aws.uswest1
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.uswest1[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# US WEST (OREGON)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "uswest2"
+  region = "us-west-2"
+}
+
+resource "aws_guardduty_detector" "uswest2" {
+  count    = contains(var.aws_regions, "us-west-2") ? 1 : 0
+  provider = aws.uswest2
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "uswest2" {
+  count            = contains(var.aws_regions, "us-west-2") ? 1 : 0
+  provider         = aws.uswest2
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "uswest2" {
+  depends_on  = [aws_guardduty_organization_admin_account.uswest2]
+  count       = contains(var.aws_regions, "us-west-2") ? 1 : 0
+  provider    = aws.uswest2
+  auto_enable = true
+  detector_id = aws_guardduty_detector.uswest2[0].id
+}
+
+resource "aws_guardduty_member" "uswest2" {
+  depends_on = [aws_guardduty_organization_admin_account.uswest2]
+  for_each   = contains(var.aws_regions, "us-west-2") ? var.member_list : {}
+  provider   = aws.uswest2
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.uswest2[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "uswest2" {
+  count       = contains(var.aws_regions, "us-west-2") && var.has_ipset ? 1 : 0
+  provider    = aws.uswest2
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.uswest2[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "uswest2" {
+  count       = contains(var.aws_regions, "us-west-2") && var.has_threatintelset ? 1 : 0
+  provider    = aws.uswest2
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.uswest2[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# CANADA (CENTRAL)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "cacentral1"
+  region = "ca-central-1"
+}
+
+resource "aws_guardduty_detector" "cacentral1" {
+  count    = contains(var.aws_regions, "ca-central-1") ? 1 : 0
+  provider = aws.cacentral1
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "cacentral1" {
+  count            = contains(var.aws_regions, "ca-central-1") ? 1 : 0
+  provider         = aws.cacentral1
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "cacentral1" {
+  depends_on  = [aws_guardduty_organization_admin_account.cacentral1]
+  count       = contains(var.aws_regions, "ca-central-1") ? 1 : 0
+  provider    = aws.cacentral1
+  auto_enable = true
+  detector_id = aws_guardduty_detector.cacentral1[0].id
+}
+
+resource "aws_guardduty_member" "cacentral1" {
+  depends_on = [aws_guardduty_organization_admin_account.cacentral1]
+  for_each   = contains(var.aws_regions, "ca-central-1") ? var.member_list : {}
+  provider   = aws.cacentral1
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.cacentral1[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "cacentral1" {
+  count       = contains(var.aws_regions, "ca-central-1") && var.has_ipset ? 1 : 0
+  provider    = aws.cacentral1
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.cacentral1[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "cacentral1" {
+  count       = contains(var.aws_regions, "ca-central-1") && var.has_threatintelset ? 1 : 0
+  provider    = aws.cacentral1
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.cacentral1[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# EUROPE (FRANKFURT)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "eucentral1"
+  region = "eu-central-1"
+}
+
+resource "aws_guardduty_detector" "eucentral1" {
+  count    = contains(var.aws_regions, "eu-central-1") ? 1 : 0
+  provider = aws.eucentral1
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "eucentral1" {
+  count            = contains(var.aws_regions, "eu-central-1") ? 1 : 0
+  provider         = aws.eucentral1
+  admin_account_id = var.aws_account_id
+}
+
+
+resource "aws_guardduty_organization_configuration" "eucentral1" {
+  depends_on  = [aws_guardduty_organization_admin_account.eucentral1]
+  count       = contains(var.aws_regions, "eu-central-1") ? 1 : 0
+  provider    = aws.eucentral1
+  auto_enable = true
+  detector_id = aws_guardduty_detector.eucentral1[0].id
+}
+
+resource "aws_guardduty_member" "eucentral1" {
+  depends_on = [aws_guardduty_organization_admin_account.eucentral1]
+  for_each   = contains(var.aws_regions, "eu-central-1") ? var.member_list : {}
+  provider   = aws.eucentral1
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.eucentral1[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "eucentral1" {
+  count       = contains(var.aws_regions, "eu-central-1") && var.has_ipset ? 1 : 0
+  provider    = aws.eucentral1
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.eucentral1[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "eucentral1" {
+  count       = contains(var.aws_regions, "eu-central-1") && var.has_threatintelset ? 1 : 0
+  provider    = aws.eucentral1
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.eucentral1[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# EUROPE (IRELAND)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "euwest1"
+  region = "eu-west-1"
+}
+
+resource "aws_guardduty_detector" "euwest1" {
+  count    = contains(var.aws_regions, "eu-west-1") ? 1 : 0
+  provider = aws.euwest1
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "euwest1" {
+  count            = contains(var.aws_regions, "eu-west-1") ? 1 : 0
+  provider         = aws.euwest1
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "euwest1" {
+  depends_on  = [aws_guardduty_organization_admin_account.euwest1]
+  count       = contains(var.aws_regions, "eu-west-1") ? 1 : 0
+  provider    = aws.euwest1
+  auto_enable = true
+  detector_id = aws_guardduty_detector.euwest1[0].id
+}
+
+resource "aws_guardduty_member" "euwest1" {
+  depends_on = [aws_guardduty_organization_admin_account.euwest1]
+  for_each   = contains(var.aws_regions, "eu-west-1") ? var.member_list : {}
+  provider   = aws.euwest1
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.euwest1[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "euwest1" {
+  count       = contains(var.aws_regions, "eu-west-1") && var.has_ipset ? 1 : 0
+  provider    = aws.euwest1
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.euwest1[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "euwest1" {
+  count       = contains(var.aws_regions, "eu-west-1") && var.has_threatintelset ? 1 : 0
+  provider    = aws.euwest1
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.euwest1[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# EUROPE (LONDON)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "euwest2"
+  region = "eu-west-2"
+}
+
+resource "aws_guardduty_detector" "euwest2" {
+  count    = contains(var.aws_regions, "eu-west-2") ? 1 : 0
+  provider = aws.euwest2
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "euwest2" {
+  count            = contains(var.aws_regions, "eu-west-2") ? 1 : 0
+  provider         = aws.euwest2
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "euwest2" {
+  depends_on  = [aws_guardduty_organization_admin_account.euwest2]
+  count       = contains(var.aws_regions, "eu-west-2") ? 1 : 0
+  provider    = aws.euwest2
+  auto_enable = true
+  detector_id = aws_guardduty_detector.euwest2[0].id
+}
+
+resource "aws_guardduty_member" "euwest2" {
+  depends_on = [aws_guardduty_organization_admin_account.euwest2]
+  for_each   = contains(var.aws_regions, "eu-west-2") ? var.member_list : {}
+  provider   = aws.euwest2
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.euwest2[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "euwest2" {
+  count       = contains(var.aws_regions, "eu-west-2") && var.has_ipset ? 1 : 0
+  provider    = aws.euwest2
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.euwest2[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "euwest2" {
+  count       = contains(var.aws_regions, "eu-west-2") && var.has_threatintelset ? 1 : 0
+  provider    = aws.euwest2
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.euwest2[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# EUROPE (PARIS)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "euwest3"
+  region = "eu-west-3"
+}
+
+resource "aws_guardduty_detector" "euwest3" {
+  count    = contains(var.aws_regions, "eu-west-3") ? 1 : 0
+  provider = aws.euwest3
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "euwest3" {
+  count            = contains(var.aws_regions, "eu-west-3") ? 1 : 0
+  provider         = aws.euwest3
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "euwest3" {
+  depends_on  = [aws_guardduty_organization_admin_account.euwest3]
+  count       = contains(var.aws_regions, "eu-west-3") ? 1 : 0
+  provider    = aws.euwest3
+  auto_enable = true
+  detector_id = aws_guardduty_detector.euwest3[0].id
+}
+
+resource "aws_guardduty_member" "euwest3" {
+  depends_on = [aws_guardduty_organization_admin_account.euwest3]
+  for_each   = contains(var.aws_regions, "eu-west-3") ? var.member_list : {}
+  provider   = aws.euwest3
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.euwest3[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "euwest3" {
+  count       = contains(var.aws_regions, "eu-west-3") && var.has_ipset ? 1 : 0
+  provider    = aws.euwest3
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.euwest3[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "euwest3" {
+  count       = contains(var.aws_regions, "eu-west-3") && var.has_threatintelset ? 1 : 0
+  provider    = aws.euwest3
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.euwest3[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# EUROPE (STOCKHOLM)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "eunorth1"
+  region = "eu-north-1"
+}
+
+resource "aws_guardduty_detector" "eunorth1" {
+  count    = contains(var.aws_regions, "eu-north-1") ? 1 : 0
+  provider = aws.eunorth1
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "eunorth1" {
+  count            = contains(var.aws_regions, "eu-north-1") ? 1 : 0
+  provider         = aws.eunorth1
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "eunorth1" {
+  depends_on  = [aws_guardduty_organization_admin_account.eunorth1]
+  count       = contains(var.aws_regions, "eu-north-1") ? 1 : 0
+  provider    = aws.eunorth1
+  auto_enable = true
+  detector_id = aws_guardduty_detector.eunorth1[0].id
+}
+
+resource "aws_guardduty_member" "eunorth1" {
+  depends_on = [aws_guardduty_organization_admin_account.eunorth1]
+  for_each   = contains(var.aws_regions, "eu-north-1") ? var.member_list : {}
+  provider   = aws.eunorth1
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.eunorth1[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "eunorth1" {
+  count       = contains(var.aws_regions, "eu-north-1") && var.has_ipset ? 1 : 0
+  provider    = aws.eunorth1
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.eunorth1[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "eunorth1" {
+  count       = contains(var.aws_regions, "eu-north-1") && var.has_threatintelset ? 1 : 0
+  provider    = aws.eunorth1
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.eunorth1[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# ASIA PACIFIC (TOKYO)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "apnortheast1"
+  region = "ap-northeast-1"
+}
+
+resource "aws_guardduty_detector" "apnortheast1" {
+  count    = contains(var.aws_regions, "ap-northeast-1") ? 1 : 0
+  provider = aws.apnortheast1
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "apnortheast1" {
+  count            = contains(var.aws_regions, "ap-northeast-1") ? 1 : 0
+  provider         = aws.apnortheast1
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "apnortheast1" {
+  depends_on  = [aws_guardduty_organization_admin_account.apnortheast1]
+  count       = contains(var.aws_regions, "ap-northeast-1") ? 1 : 0
+  provider    = aws.apnortheast1
+  auto_enable = true
+  detector_id = aws_guardduty_detector.apnortheast1[0].id
+}
+
+resource "aws_guardduty_member" "apnortheast1" {
+  depends_on = [aws_guardduty_organization_admin_account.apnortheast1]
+  for_each   = contains(var.aws_regions, "ap-northeast-1") ? var.member_list : {}
+  provider   = aws.apnortheast1
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.apnortheast1[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "apnortheast1" {
+  count       = contains(var.aws_regions, "ap-northeast-1") && var.has_ipset ? 1 : 0
+  provider    = aws.apnortheast1
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.apnortheast1[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "apnortheast1" {
+  count       = contains(var.aws_regions, "ap-northeast-1") && var.has_threatintelset ? 1 : 0
+  provider    = aws.apnortheast1
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.apnortheast1[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# ASIA PACIFIC (SEOUL)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "apnortheast2"
+  region = "ap-northeast-2"
+}
+
+resource "aws_guardduty_detector" "apnortheast2" {
+  count    = contains(var.aws_regions, "ap-northeast-2") ? 1 : 0
+  provider = aws.apnortheast2
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "apnortheast2" {
+  count            = contains(var.aws_regions, "ap-northeast-2") ? 1 : 0
+  provider         = aws.apnortheast2
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "apnortheast2" {
+  depends_on  = [aws_guardduty_organization_admin_account.apnortheast2]
+  count       = contains(var.aws_regions, "ap-northeast-2") ? 1 : 0
+  provider    = aws.apnortheast2
+  auto_enable = true
+  detector_id = aws_guardduty_detector.apnortheast2[0].id
+}
+
+resource "aws_guardduty_member" "apnortheast2" {
+  depends_on = [aws_guardduty_organization_admin_account.apnortheast2]
+  for_each   = contains(var.aws_regions, "ap-northeast-2") ? var.member_list : {}
+  provider   = aws.apnortheast2
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.apnortheast2[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "apnortheast2" {
+  count       = contains(var.aws_regions, "ap-northeast-2") && var.has_ipset ? 1 : 0
+  provider    = aws.apnortheast2
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.apnortheast2[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "apnortheast2" {
+  count       = contains(var.aws_regions, "ap-northeast-2") && var.has_threatintelset ? 1 : 0
+  provider    = aws.apnortheast2
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.apnortheast2[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# ASIA PACIFIC (SINGAPORE)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "apsoutheast1"
+  region = "ap-southeast-1"
+}
+
+resource "aws_guardduty_detector" "apsoutheast1" {
+  count    = contains(var.aws_regions, "ap-southeast-1") ? 1 : 0
+  provider = aws.apsoutheast1
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "apsoutheast1" {
+  count            = contains(var.aws_regions, "ap-southeast-1") ? 1 : 0
+  provider         = aws.apsoutheast1
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "apsoutheast1" {
+  depends_on  = [aws_guardduty_organization_admin_account.apsoutheast1]
+  count       = contains(var.aws_regions, "ap-southeast-1") ? 1 : 0
+  provider    = aws.apsoutheast1
+  auto_enable = true
+  detector_id = aws_guardduty_detector.apsoutheast1[0].id
+}
+
+resource "aws_guardduty_member" "apsoutheast1" {
+  depends_on = [aws_guardduty_organization_admin_account.apsoutheast1]
+  for_each   = contains(var.aws_regions, "ap-southeast-1") ? var.member_list : {}
+  provider   = aws.apsoutheast1
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.apsoutheast1[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "apsoutheast1" {
+  count       = contains(var.aws_regions, "ap-southeast-1") && var.has_ipset ? 1 : 0
+  provider    = aws.apsoutheast1
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.apsoutheast1[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "apsoutheast1" {
+  count       = contains(var.aws_regions, "ap-southeast-1") && var.has_threatintelset ? 1 : 0
+  provider    = aws.apsoutheast1
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.apsoutheast1[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# ASIA PACIFIC (SYDNEY)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "apsoutheast2"
+  region = "ap-southeast-2"
+}
+
+resource "aws_guardduty_detector" "apsoutheast2" {
+  count    = contains(var.aws_regions, "ap-southeast-2") ? 1 : 0
+  provider = aws.apsoutheast2
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "apsoutheast2" {
+  count            = contains(var.aws_regions, "ap-southeast-2") ? 1 : 0
+  provider         = aws.apsoutheast2
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "apsoutheast2" {
+  depends_on  = [aws_guardduty_organization_admin_account.apsoutheast2]
+  count       = contains(var.aws_regions, "ap-southeast-2") ? 1 : 0
+  provider    = aws.apsoutheast2
+  auto_enable = true
+  detector_id = aws_guardduty_detector.apsoutheast2[0].id
+}
+
+resource "aws_guardduty_member" "apsoutheast2" {
+  depends_on = [aws_guardduty_organization_admin_account.apsoutheast2]
+  for_each   = contains(var.aws_regions, "ap-southeast-2") ? var.member_list : {}
+  provider   = aws.apsoutheast2
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.apsoutheast2[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "apsoutheast2" {
+  count       = contains(var.aws_regions, "ap-southeast-2") && var.has_ipset ? 1 : 0
+  provider    = aws.apsoutheast2
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.apsoutheast2[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "apsoutheast2" {
+  count       = contains(var.aws_regions, "ap-southeast-2") && var.has_threatintelset ? 1 : 0
+  provider    = aws.apsoutheast2
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.apsoutheast2[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# ASIA PACIFIC (MUMBAI)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "apsouth1"
+  region = "ap-south-1"
+}
+
+resource "aws_guardduty_detector" "apsouth1" {
+  count    = contains(var.aws_regions, "ap-south-1") ? 1 : 0
+  provider = aws.apsouth1
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "apsouth1" {
+  count            = contains(var.aws_regions, "ap-south-1") ? 1 : 0
+  provider         = aws.apsouth1
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "apsouth1" {
+  depends_on  = [aws_guardduty_organization_admin_account.apsouth1]
+  count       = contains(var.aws_regions, "ap-south-1") ? 1 : 0
+  provider    = aws.apsouth1
+  auto_enable = true
+  detector_id = aws_guardduty_detector.apsouth1[0].id
+}
+
+resource "aws_guardduty_member" "apsouth1" {
+  depends_on = [aws_guardduty_organization_admin_account.apsouth1]
+  for_each   = contains(var.aws_regions, "ap-south-1") ? var.member_list : {}
+  provider   = aws.apsouth1
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.apsouth1[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "apsouth1" {
+  count       = contains(var.aws_regions, "ap-south-1") && var.has_ipset ? 1 : 0
+  provider    = aws.apsouth1
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.apsouth1[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "apsouth1" {
+  count       = contains(var.aws_regions, "ap-south-1") && var.has_threatintelset ? 1 : 0
+  provider    = aws.apsouth1
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.apsouth1[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# SOUTH AMERICA (SÃO PAULO)
+# ----------------------------------------------------------------------------------------------------------------------
+provider "aws" {
+  alias  = "saeast1"
+  region = "sa-east-1"
+}
+
+resource "aws_guardduty_detector" "saeast1" {
+  count    = contains(var.aws_regions, "sa-east-1") ? 1 : 0
+  provider = aws.saeast1
+  enable   = true
+}
+
+resource "aws_guardduty_organization_admin_account" "saeast1" {
+  count            = contains(var.aws_regions, "sa-east-1") ? 1 : 0
+  provider         = aws.saeast1
+  admin_account_id = var.aws_account_id
+}
+
+resource "aws_guardduty_organization_configuration" "saeast1" {
+  depends_on  = [aws_guardduty_organization_admin_account.saeast1]
+  count       = contains(var.aws_regions, "sa-east-1") ? 1 : 0
+  provider    = aws.saeast1
+  auto_enable = true
+  detector_id = aws_guardduty_detector.saeast1[0].id
+}
+
+resource "aws_guardduty_member" "saeast1" {
+  depends_on = [aws_guardduty_organization_admin_account.saeast1]
+  for_each   = contains(var.aws_regions, "sa-east-1") ? var.member_list : {}
+  provider   = aws.saeast1
+
+  account_id                 = each.key
+  detector_id                = aws_guardduty_detector.saeast1[0].id
+  email                      = each.value
+  disable_email_notification = true
+}
+
+resource "aws_guardduty_ipset" "saeast1" {
+  count       = contains(var.aws_regions, "sa-east-1") && var.has_ipset ? 1 : 0
+  provider    = aws.saeast1
+  activate    = var.ipset_activate
+  detector_id = aws_guardduty_detector.saeast1[0].id
+  format      = var.ipset_format
+  location    = "s3://${aws_s3_bucket_object.ipset[0].bucket}/${aws_s3_bucket_object.ipset[0].key}"
+  name        = local.ipset_name
+}
+
+resource "aws_guardduty_threatintelset" "saeast1" {
+  count       = contains(var.aws_regions, "sa-east-1") && var.has_threatintelset ? 1 : 0
+  provider    = aws.saeast1
+  activate    = var.threatintelset_activate
+  detector_id = aws_guardduty_detector.saeast1[0].id
+  format      = var.threatintelset_format
+  location    = "s3://${aws_s3_bucket_object.threatintelset[0].bucket}/${aws_s3_bucket_object.threatintelset[0].key}"
+  name        = local.threatintelset_name
 }

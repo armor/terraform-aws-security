@@ -3,6 +3,11 @@ variable "aws_account_id" {
   description = "The AWS account id permitted to assume guardduty role."
 }
 
+variable "main_region" {
+  type        = string
+  description = "The primary region that the would be use for deployment."
+}
+
 variable "aws_regions" {
   type        = list(any)
   description = "List of regions where guardduty will be deployed."
