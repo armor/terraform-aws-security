@@ -31,31 +31,22 @@ variable "bucket_name" {
   default     = ""
 }
 
-variable "logging" {
-  type        = map(any)
-  description = "Enable logging in S3 bucket."
-  default = {
-    target_bucket = ""
-    target_prefix = ""
-  }
-}
-
 variable "detector_enable" {
   type        = bool
   description = "Enable monitoring and feedback reporting."
   default     = true
 }
 
-variable "has_ipset" {
-  type        = bool
-  description = "Whether to include IPSet."
-  default     = false
+variable "ipset_name" {
+  type        = string
+  description = "Name of the ipset list."
+  default     = "IPSet"
 }
 
-variable "has_threatintelset" {
-  type        = bool
-  description = "Whether to include ThreatIntelSet."
-  default     = false
+variable "ipset_filename" {
+  type        = string
+  description = "Filename of the ipset list."
+  default     = "ipset.txt"
 }
 
 variable "ipset_activate" {
@@ -73,23 +64,23 @@ variable "ipset_format" {
 variable "ipset_iplist" {
   type        = string
   description = "IPSet list of trusted IP addresses."
-  default     = ""
+  default     = null
 }
 
-variable "threatintelset_activate" {
-  type        = bool
-  description = "Specifies whether GuardDuty is to start using the uploaded ThreatIntelSet."
-  default     = true
-}
+variable "threat_intel_sets" {
+  type = list(object({
+    name           = string,
+    filename       = string,
+    format         = string,
+    content        = string,
+    ignore_content = bool,
+    activate       = bool,
+  }))
+  description = "Enable and configure threat intel sets."
+  default     = []
 
-variable "threatintelset_format" {
-  type        = string
-  description = "The format of the file that contains the ThreatIntelSet."
-  default     = "TXT"
-}
-
-variable "threatintelset_iplist" {
-  type        = string
-  description = "ThreatIntelSet list of known malicious IP addresses."
-  default     = ""
+  validation {
+    condition     = length(var.threat_intel_sets) <= 6
+    error_message = "Threat intel sets should only contain 6 or less set of list."
+  }
 }

@@ -49,17 +49,14 @@ The below outlines the current parameters and defaults.
 | bucket\_name | Name of the S3 bucket to use. | `string` | `""` | no |
 | detector\_enable | Enable monitoring and feedback reporting. | `bool` | `true` | no |
 | group\_name | The guardduty group's name. | `string` | `"guardduty-admin"` | no |
-| has\_ipset | Whether to include IPSet. | `bool` | `false` | no |
-| has\_threatintelset | Whether to include ThreatIntelSet. | `bool` | `false` | no |
 | ipset\_activate | Specifies whether GuardDuty is to start using the uploaded IPSet. | `bool` | `true` | no |
+| ipset\_filename | Filename of the ipset list. | `string` | `"ipset.txt"` | no |
 | ipset\_format | The format of the file that contains the IPSet. | `string` | `"TXT"` | no |
-| ipset\_iplist | IPSet list of trusted IP addresses. | `string` | `""` | no |
-| logging | Enable logging in S3 bucket. | `map(any)` | <pre>{<br>  "target_bucket": "",<br>  "target_prefix": ""<br>}</pre> | no |
+| ipset\_iplist | IPSet list of trusted IP addresses. | `string` | `null` | no |
+| ipset\_name | Name of the ipset list. | `string` | `"IPSet"` | no |
 | main\_region | The primary region that the would be use for deployment. | `string` | n/a | yes |
 | member\_list | The list of member accounts to be added to guardduty. | `map(string)` | `{}` | no |
-| threatintelset\_activate | Specifies whether GuardDuty is to start using the uploaded ThreatIntelSet. | `bool` | `true` | no |
-| threatintelset\_format | The format of the file that contains the ThreatIntelSet. | `string` | `"TXT"` | no |
-| threatintelset\_iplist | ThreatIntelSet list of known malicious IP addresses. | `string` | `""` | no |
+| threat\_intel\_sets | Enable and configure threat intel sets. | <pre>list(object({<br>    name           = string,<br>    filename       = string,<br>    format         = string,<br>    content        = string,<br>    ignore_content = bool,<br>    activate       = bool,<br>  }))</pre> | `[]` | no |
 
 ### Examples
 
@@ -148,6 +145,10 @@ To apply that:
 A GuardDuty instance configured as a Master that invites a list of members:
 
 ```tf
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# DEPLOY GUARDDUTY
+# ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
 terraform {
   required_version = ">= 0.14.6"
 
@@ -173,11 +174,18 @@ module "guardduty" {
 
   bucket_name           = "s3-audit-guardduty"
 
-  has_ipset             = true
   ipset_iplist          = "1.1.1.1"
 
-  has_threatintelset    = true
-  threatintelset_iplist = "2.2.2.2"
+  threat_intel_sets = [
+     {
+      name = "ThreatIntelSet", 
+      filename = "threatintelset.txt", 
+      format = "TXT", 
+      content = null, 
+      ignore_content = true, 
+      activate = true,
+    },
+   ]
 }
 ```
 
