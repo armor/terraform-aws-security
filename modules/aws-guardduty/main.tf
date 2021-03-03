@@ -29,7 +29,7 @@ resource "aws_s3_bucket_object" "ipset" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 resource "aws_s3_bucket_object" "threatintelset" {
-  for_each               = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if threat_intel_set.ignore_content == false && threat_intel_set.content != null }
+  for_each               = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if threat_intel_set.content != null }
   acl                    = "public-read"
   content                = each.value.content
   bucket                 = var.bucket_name
@@ -87,8 +87,8 @@ resource "aws_guardduty_ipset" "useast1" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "useast1" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "us-east-1") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "useast1_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "us-east-1") && threat_intel_set.ignore_content == true }
   provider    = aws.useast1
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.useast1[0].id
@@ -99,6 +99,16 @@ resource "aws_guardduty_threatintelset" "useast1" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "useast1" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "us-east-1") && threat_intel_set.ignore_content == false }
+  provider    = aws.useast1
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.useast1[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -150,8 +160,8 @@ resource "aws_guardduty_ipset" "useast2" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "useast2" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "us-east-2") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "useast2_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "us-east-2") && threat_intel_set.ignore_content == true }
   provider    = aws.useast2
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.useast2[0].id
@@ -162,6 +172,16 @@ resource "aws_guardduty_threatintelset" "useast2" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "useast2" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "us-east-2") && threat_intel_set.ignore_content == false }
+  provider    = aws.useast2
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.useast2[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -213,8 +233,8 @@ resource "aws_guardduty_ipset" "uswest1" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "uswest1" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "us-west-1") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "uswest1_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "us-west-1") && threat_intel_set.ignore_content == true }
   provider    = aws.uswest1
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.uswest1[0].id
@@ -225,6 +245,16 @@ resource "aws_guardduty_threatintelset" "uswest1" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "uswest1" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "us-west-1") && threat_intel_set.ignore_content == false }
+  provider    = aws.uswest1
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.uswest1[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -276,8 +306,8 @@ resource "aws_guardduty_ipset" "uswest2" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "uswest2" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "us-west-2") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "uswest2_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "us-west-2") && threat_intel_set.ignore_content == true }
   provider    = aws.uswest2
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.uswest2[0].id
@@ -288,6 +318,16 @@ resource "aws_guardduty_threatintelset" "uswest2" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "uswest2" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "us-west-2") && threat_intel_set.ignore_content == false }
+  provider    = aws.uswest2
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.uswest2[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -339,8 +379,8 @@ resource "aws_guardduty_ipset" "cacentral1" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "cacentral1" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ca-central-1") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "cacentral1_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ca-central-1") && threat_intel_set.ignore_content == true }
   provider    = aws.cacentral1
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.cacentral1[0].id
@@ -351,6 +391,16 @@ resource "aws_guardduty_threatintelset" "cacentral1" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "cacentral1" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ca-central-1") && threat_intel_set.ignore_content == false }
+  provider    = aws.cacentral1
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.cacentral1[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -403,8 +453,8 @@ resource "aws_guardduty_ipset" "eucentral1" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "eucentral1" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-central-1") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "eucentral1_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-central-1") && threat_intel_set.ignore_content == true }
   provider    = aws.eucentral1
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.eucentral1[0].id
@@ -415,6 +465,16 @@ resource "aws_guardduty_threatintelset" "eucentral1" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "eucentral1" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-central-1") && threat_intel_set.ignore_content == false }
+  provider    = aws.eucentral1
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.eucentral1[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -466,8 +526,8 @@ resource "aws_guardduty_ipset" "euwest1" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "euwest1" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-west-1") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "euwest1_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-west-1") && threat_intel_set.ignore_content == true }
   provider    = aws.euwest1
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.euwest1[0].id
@@ -478,6 +538,16 @@ resource "aws_guardduty_threatintelset" "euwest1" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "euwest1" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-west-1") && threat_intel_set.ignore_content == false }
+  provider    = aws.euwest1
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.euwest1[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -529,8 +599,8 @@ resource "aws_guardduty_ipset" "euwest2" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "euwest2" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-west-2") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "euwest2_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-west-2") && threat_intel_set.ignore_content == true }
   provider    = aws.euwest2
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.euwest2[0].id
@@ -541,6 +611,16 @@ resource "aws_guardduty_threatintelset" "euwest2" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "euwest2" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-west-2") && threat_intel_set.ignore_content == false }
+  provider    = aws.euwest2
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.euwest2[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -592,8 +672,8 @@ resource "aws_guardduty_ipset" "euwest3" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "euwest3" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-west-3") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "euwest3_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-west-3") && threat_intel_set.ignore_content == true }
   provider    = aws.euwest3
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.euwest3[0].id
@@ -604,6 +684,16 @@ resource "aws_guardduty_threatintelset" "euwest3" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "euwest3" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-west-3") && threat_intel_set.ignore_content == false }
+  provider    = aws.euwest3
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.euwest3[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -655,8 +745,8 @@ resource "aws_guardduty_ipset" "eunorth1" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "eunorth1" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-north-1") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "eunorth1_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-north-1") && threat_intel_set.ignore_content == true }
   provider    = aws.eunorth1
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.eunorth1[0].id
@@ -667,6 +757,16 @@ resource "aws_guardduty_threatintelset" "eunorth1" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "eunorth1" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "eu-north-1") && threat_intel_set.ignore_content == false }
+  provider    = aws.eunorth1
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.eunorth1[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -718,8 +818,8 @@ resource "aws_guardduty_ipset" "apnortheast1" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "apnortheast1" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-northeast-1") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "apnortheast1_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-northeast-1") && threat_intel_set.ignore_content == true }
   provider    = aws.apnortheast1
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.apnortheast1[0].id
@@ -730,6 +830,16 @@ resource "aws_guardduty_threatintelset" "apnortheast1" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "apnortheast1" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-northeast-1") && threat_intel_set.ignore_content == false }
+  provider    = aws.apnortheast1
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.apnortheast1[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -781,8 +891,8 @@ resource "aws_guardduty_ipset" "apnortheast2" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "apnortheast2" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-northeast-2") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "apnortheast2_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-northeast-2") && threat_intel_set.ignore_content == true }
   provider    = aws.apnortheast2
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.apnortheast2[0].id
@@ -793,6 +903,16 @@ resource "aws_guardduty_threatintelset" "apnortheast2" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "apnortheast2" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-northeast-2") && threat_intel_set.ignore_content == false }
+  provider    = aws.apnortheast2
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.apnortheast2[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -844,8 +964,8 @@ resource "aws_guardduty_ipset" "apsoutheast1" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "apsoutheast1" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-southeast-1") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "apsoutheast1_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-southeast-1") && threat_intel_set.ignore_content == true }
   provider    = aws.apsoutheast1
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.apsoutheast1[0].id
@@ -856,6 +976,16 @@ resource "aws_guardduty_threatintelset" "apsoutheast1" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "apsoutheast1" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-southeast-1") && threat_intel_set.ignore_content == false }
+  provider    = aws.apsoutheast1
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.apsoutheast1[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -907,8 +1037,8 @@ resource "aws_guardduty_ipset" "apsoutheast2" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "apsoutheast2" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-southeast-2") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "apsoutheast2_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-southeast-2") && threat_intel_set.ignore_content == true }
   provider    = aws.apsoutheast2
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.apsoutheast2[0].id
@@ -919,6 +1049,16 @@ resource "aws_guardduty_threatintelset" "apsoutheast2" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "apsoutheast2" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-southeast-2") && threat_intel_set.ignore_content == false }
+  provider    = aws.apsoutheast2
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.apsoutheast2[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -970,8 +1110,8 @@ resource "aws_guardduty_ipset" "apsouth1" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "apsouth1" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-south-1") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "apsouth1_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-south-1") && threat_intel_set.ignore_content == true }
   provider    = aws.apsouth1
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.apsouth1[0].id
@@ -982,6 +1122,16 @@ resource "aws_guardduty_threatintelset" "apsouth1" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "apsouth1" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "ap-south-1") && threat_intel_set.ignore_content == false }
+  provider    = aws.apsouth1
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.apsouth1[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -1033,8 +1183,8 @@ resource "aws_guardduty_ipset" "saeast1" {
   name        = var.ipset_filename
 }
 
-resource "aws_guardduty_threatintelset" "saeast1" {
-  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "sa-east-1") && threat_intel_set.ignore_content == false }
+resource "aws_guardduty_threatintelset" "saeast1_ignore_changes" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "sa-east-1") && threat_intel_set.ignore_content == true }
   provider    = aws.saeast1
   activate    = each.value.activate
   detector_id = aws_guardduty_detector.saeast1[0].id
@@ -1045,4 +1195,14 @@ resource "aws_guardduty_threatintelset" "saeast1" {
   lifecycle {
     ignore_changes = all
   }
+}
+
+resource "aws_guardduty_threatintelset" "saeast1" {
+  for_each    = { for threat_intel_set in var.threat_intel_sets : threat_intel_set.name => threat_intel_set if contains(var.aws_regions, "sa-east-1") && threat_intel_set.ignore_content == false }
+  provider    = aws.saeast1
+  activate    = each.value.activate
+  detector_id = aws_guardduty_detector.saeast1[0].id
+  format      = each.value.format
+  location    = "s3://${var.bucket_name}/${each.value.filename}"
+  name        = each.value.name
 }
