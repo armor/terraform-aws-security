@@ -45,16 +45,17 @@ The below outlines the current parameters and defaults.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | aws\_account\_id | The AWS account id permitted to assume guardduty role. | `string` | n/a | yes |
+| aws\_region | The primary region that the would be use for deployment. | `string` | n/a | yes |
 | aws\_regions | List of regions where guardduty will be deployed. | `list(any)` | n/a | yes |
 | bucket\_name | Name of the S3 bucket to use. | `string` | `""` | no |
-| detector\_enable | Enable monitoring and feedback reporting. | `bool` | `true` | no |
-| group\_name | The guardduty group's name. | `string` | `"guardduty-admin"` | no |
+| create\_detector | Create GuardDuty Detector for monitoring and feedback reporting. | `bool` | `false` | no |
+| delegate_admin | Delegate the AWS Account specified in `aws_account_id` as the GuardDuty Admin. This can only be delegated from the Organization Management account. | `bool` | `false` | no |
+| invite\_member\_accounts | Invite `member_list` as a GuardDuty member account to the current GuardDuty master account. | `bool` | `false` | no |
 | ipset\_activate | Specifies whether GuardDuty is to start using the uploaded IPSet. | `bool` | `true` | no |
 | ipset\_filename | Filename of the ipset list. | `string` | `"ipset.txt"` | no |
 | ipset\_format | The format of the file that contains the IPSet. | `string` | `"TXT"` | no |
 | ipset\_iplist | IPSet list of trusted IP addresses. | `string` | `null` | no |
 | ipset\_name | Name of the ipset list. | `string` | `"IPSet"` | no |
-| main\_region | The primary region that the would be use for deployment. | `string` | n/a | yes |
 | member\_list | The list of member accounts to be added to guardduty. | `map(string)` | `{}` | no |
 | threat\_intel\_sets | Enable and configure threat intel sets. | <pre>list(object({<br>    name           = string,<br>    filename       = string,<br>    format         = string,<br>    content        = string,<br>    ignore_content = bool,<br>    activate       = bool,<br>  }))</pre> | `[]` | no |
 
@@ -62,7 +63,7 @@ The below outlines the current parameters and defaults.
 
 #### Basic Setting
 
-A GuardDuty instance configured as a Master that invites a list of members:
+GuardDuty admin is delegated from the Organization Management account and a GuardDuty detector is configured in the delegated admin account:
 
 ```tf
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -90,6 +91,9 @@ module "guardduty" {
   aws_account_id = "xxxxxxxxxxxx"
   main_region   = "ap-southeast-1"
   aws_region     = ["ap-southeast-1"]
+  delegate_admin         = true
+  invite_member_accounts = false
+  create_detector        = false
 }
 ```
 
@@ -101,7 +105,7 @@ To apply that:
 
 #### Auto add user
 
-A GuardDuty instance configured as a Master that invites a list of members:
+A GuardDuty instance configured as a Master that invites a list of members: (detector is already created through admin delegation)
 
 ```tf
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -127,10 +131,13 @@ module "guardduty" {
   source = "git::git@github.com:quantum-sec/package-aws-security.git//modules/aws-guardduty?ref=2.0.1"
 
   aws_account_id = "xxxxxxxxxxxx"
-  main_region    = "ap-southeast-1"
-  aws_region     = ["ap-southeast-1"]
+  aws_region     = "ap-southeast-1"
+  aws_regions    = ["ap-southeast-1"]
   member_list    = {xxxxxxxxxxxx = "xxx@xxx.com", yyyyyyyyyyyy = "yyy@yyy.com"}
 
+  delegate_admin         = false
+  invite_member_accounts = true
+  create_detector        = false
 }
 ```
 
@@ -142,9 +149,9 @@ To apply that:
 
 #### With ipset and threatintelset enabled
 
-A GuardDuty instance configured as a Master that invites a list of members:
+A GuardDuty instance configured as a Master that invites a list of members: (detector is already created through admin delegation)
 
-```tf
+```hcl
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # DEPLOY GUARDDUTY
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -167,25 +174,28 @@ terraform {
 module "guardduty" {
   source = "git::git@github.com:quantum-sec/package-aws-security.git//modules/aws-guardduty?ref=2.0.1"
 
-  aws_account_id        = "xxxxxxxxxxxx"
-  main_region           = "ap-southeast-1"
-  aws_region            = ["ap-southeast-1"]
-  member_list           = {xxxxxxxxxxxx = "xxx@xxx.com", yyyyyyyyyyyy = "yyy@yyy.com"}
+  aws_account_id         = "xxxxxxxxxxxx"
+  aws_region             = "ap-southeast-1"
+  aws_regions            = ["ap-southeast-1"]
+  member_list            = {xxxxxxxxxxxx = "xxx@xxx.com", yyyyyyyyyyyy = "yyy@yyy.com"}
+  delegate_admin         = false
+  invite_member_accounts = true
+  create_detector        = false
 
   bucket_name           = "s3-audit-guardduty"
 
   ipset_iplist          = "1.1.1.1"
 
   threat_intel_sets = [
-     {
-      name = "ThreatIntelSet", 
-      filename = "threatintelset.txt", 
-      format = "TXT", 
-      content = null, 
-      ignore_content = true, 
+    {
+      name = "ThreatIntelSet",
+      filename = "threatintelset.txt",
+      format = "TXT",
+      content = null,
+      ignore_content = true,
       activate = true,
     },
-   ]
+  ]
 }
 ```
 
