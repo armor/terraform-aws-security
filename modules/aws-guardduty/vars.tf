@@ -1,27 +1,22 @@
 variable "aws_account_id" {
   type        = string
-  description = "The AWS account id permitted to assume guardduty role."
+  description = "The AWS account id that will be delegated administrator of GuardDuty when `delegate_admin` is set to `true` and this module is applied in the organization management account."
+  default     = null
 }
 
-variable "main_region" {
+variable "aws_region" {
   type        = string
   description = "The primary region that the would be use for deployment."
 }
 
 variable "aws_regions" {
-  type        = list(any)
+  type        = list(string)
   description = "List of regions where guardduty will be deployed."
-}
-
-variable "group_name" {
-  type        = string
-  description = "The guardduty group's name."
-  default     = "guardduty-admin"
 }
 
 variable "member_list" {
   type        = map(string)
-  description = "The list of member accounts to be added to guardduty."
+  description = "The list of member accounts to be added to guardduty.  The map should have key names of the aws account id and a string value of the root users email address of that member account.  i.e. `{ \"123456789012\" = \"rootuser@example.com\" }`."
   default     = {}
 }
 
@@ -31,10 +26,28 @@ variable "bucket_name" {
   default     = ""
 }
 
-variable "detector_enable" {
+variable "auto_enable" {
   type        = bool
-  description = "Enable monitoring and feedback reporting."
-  default     = true
+  description = "When this setting is enabled, all new accounts that are created in, or added to, the organization are added as a member accounts of the organization’s GuardDuty delegated administrator and GuardDuty is enabled in that AWS Region."
+  default     = false
+}
+
+variable "delegate_admin" {
+  type        = bool
+  description = "Delegate the AWS Account specified in `aws_account_id` as the GuardDuty Admin. This can only be delegated from the Organization Management account."
+  default     = false
+}
+
+variable "invite_member_accounts" {
+  type        = bool
+  description = "Invite `member_list` as a GuardDuty member account to the current GuardDuty master account."
+  default     = false
+}
+
+variable "create_detector" {
+  type        = bool
+  description = "Create GuardDuty Detector for monitoring and feedback reporting."
+  default     = false
 }
 
 variable "ipset_name" {
@@ -81,6 +94,6 @@ variable "threat_intel_sets" {
 
   validation {
     condition     = length(var.threat_intel_sets) <= 6
-    error_message = "Threat intel sets should only contain 6 or less set of list."
+    error_message = "Threat intel sets must contain 6 or less items."
   }
 }
