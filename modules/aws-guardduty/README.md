@@ -44,9 +44,10 @@ The below outlines the current parameters and defaults.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
-| aws\_account\_id | The AWS account id permitted to assume guardduty role. | `string` | n/a | yes |
+| auto\_enable | When this setting is enabled, all new accounts that are created in, or added to, the organization are added as a member accounts of the organization’s GuardDuty delegated administrator and GuardDuty is enabled in that AWS Region. | `bool` | `false` | no |
+| aws\_account\_id | The AWS account id permitted to assume guardduty role. | `string` | `null` | no |
 | aws\_region | The primary region that the would be use for deployment. | `string` | n/a | yes |
-| aws\_regions | List of regions where guardduty will be deployed. | `list(any)` | n/a | yes |
+| aws\_regions | List of regions where guardduty will be deployed. | `list(string)` | n/a | yes |
 | bucket\_name | Name of the S3 bucket to use. | `string` | `""` | no |
 | create\_detector | Create GuardDuty Detector for monitoring and feedback reporting. | `bool` | `false` | no |
 | delegate_admin | Delegate the AWS Account specified in `aws_account_id` as the GuardDuty Admin. This can only be delegated from the Organization Management account. | `bool` | `false` | no |

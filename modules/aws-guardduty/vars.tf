@@ -1,6 +1,7 @@
 variable "aws_account_id" {
   type        = string
   description = "The AWS account id that will be delegated administrator of GuardDuty when `delegate_admin` is set to `true` and this module is applied in the organization management account."
+  default     = null
 }
 
 variable "aws_region" {
@@ -23,6 +24,12 @@ variable "bucket_name" {
   type        = string
   description = "Name of the S3 bucket to use."
   default     = ""
+}
+
+variable "auto_enable" {
+  type        = bool
+  description = "When this setting is enabled, all new accounts that are created in, or added to, the organization are added as a member accounts of the organization’s GuardDuty delegated administrator and GuardDuty is enabled in that AWS Region."
+  default     = false
 }
 
 variable "delegate_admin" {
