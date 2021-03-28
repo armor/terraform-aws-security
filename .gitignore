@@ -4,6 +4,7 @@ terraform.tfvars
 *.tfstate
 *.tfstate.backup
 provider.tf
+.terraform.lock.hcl
 
 # OS X
 .history
