@@ -20,10 +20,6 @@ resource "aws_s3_bucket" "private_s3" {
   bucket = var.bucket_name
   acl    = "private"
 
-  versioning {
-    enabled = true
-  }
-
   server_side_encryption_configuration {
     rule {
       apply_server_side_encryption_by_default {
@@ -86,7 +82,7 @@ resource "aws_s3_bucket" "private_s3_logs" {
   acl    = "log-delivery-write"
 
   versioning {
-    enabled = true
+    enabled = var.versioning_enabled
   }
 
   server_side_encryption_configuration {
