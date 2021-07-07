@@ -69,6 +69,26 @@ resource "aws_iam_role_policy_attachment" "policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
 }
 
+// We optionally accept an SNS topic. We create the IAM policy to write to it.
+resource "aws_iam_role_policy" "sns_publish_policy" {
+
+  count = var.sns_topic_arn == null ? 0 : 1
+
+  name = local.s3_bucket_policy_name
+  role = aws_iam_role.aws_config_role.id
+
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        Effect : "Allow",
+        Action : "sns:Publish",
+        Resource : var.sns_topic_arn
+      }
+    ]
+  })
+}
+
 // AWS Config consists 3 Terraform resources. A recorder:
 resource "aws_config_configuration_recorder" "recorder" {
   name     = local.recorder_name
@@ -79,6 +99,7 @@ resource "aws_config_configuration_recorder" "recorder" {
 resource "aws_config_delivery_channel" "delivery" {
   name           = local.delivery_name
   s3_bucket_name = local.s3_bucket_name
+  sns_topic_arn  = var.sns_topic_arn
   depends_on     = [aws_config_configuration_recorder.recorder]
 }
 
@@ -97,4 +118,10 @@ variable "name" {
 variable "enable_aws_config" {
   description = "Boolean toggle to turn of and off the AWS Config recording"
   type        = bool
+}
+
+variable "sns_topic_arn" {
+  description = "(Optional) ARN of SNS topic for the AWS Config to deliver messages"
+  type        = string
+  default     = null
 }
