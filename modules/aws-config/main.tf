@@ -6,6 +6,8 @@ locals {
   s3_bucket_name        = format("%s-aws-config-%s", var.name, "s3-bucket")
   s3_bucket_policy_name = format("%s-aws-config-%s", var.name, "s3-bucket-policy")
   role_name             = format("%s-aws-config-%s", var.name, "role")
+  recorder_name         = format("%s-aws-config-%s", var.name, "recorder")
+  delivery_name         = format("%s-aws-config-%s", var.name, "delivery")
 }
 
 // We create an S3 bucket to store AWS Config data
@@ -67,8 +69,32 @@ resource "aws_iam_role_policy_attachment" "policy" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWS_ConfigRole"
 }
 
+// AWS Config consists 3 Terraform resources. A recorder:
+resource "aws_config_configuration_recorder" "recorder" {
+  name     = local.recorder_name
+  role_arn = aws_iam_role.aws_config_role.arn
+}
+
+// A delivery channel: to deliver to the S3, and optionally, an SNS channel
+resource "aws_config_delivery_channel" "delivery" {
+  name           = local.delivery_name
+  s3_bucket_name = local.s3_bucket_name
+  depends_on     = [aws_config_configuration_recorder.recorder]
+}
+
+// A status "switch": for turning AWS Config on and off
+resource "aws_config_configuration_recorder_status" "foo" {
+  name       = aws_config_configuration_recorder.recorder.name
+  is_enabled = var.enable_aws_config
+  depends_on = [aws_config_delivery_channel.delivery]
+}
 
 variable "name" {
   description = "This will be prefixed to create the AWS resources. 'example' will create a bucket named 'example-aws-config-s3-bucket'"
   type        = string
+}
+
+variable "enable_aws_config" {
+  description = "Boolean toggle to turn of and off the AWS Config recording"
+  type        = bool
 }
