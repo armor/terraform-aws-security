@@ -19,3 +19,12 @@ jobs:
   - template: templates/jobs/default.yml@pipeline-library
     parameters:
       containerImage: quantumci.azurecr.io/quantum-ci-terragrunt:latest
+      deploySteps:
+        # Update packages reference in infrastructure module
+        - template: templates/steps/versioning/update-source-reference.yml@pipeline-library
+          parameters:
+            name: UpdateInfrastructureModules
+            displayName: Update Infrastructure Modules
+            srcRepository: package-aws-security.git
+            dstRepository: infrastructure-modules
+            condition: and(succeeded(), or(eq(variables['Build.SourceBranch'], 'refs/heads/master'), eq(variables['Build.Reason'], 'PullRequest')))
