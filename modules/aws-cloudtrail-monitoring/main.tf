@@ -67,14 +67,6 @@ resource "aws_cloudwatch_log_group" "events" {
 # CREATE AN IAM ROLE TO ALLOW CLOUDTRAIL TO SHIP LOGS TO CLOUDWATCH LOGS
 # ----------------------------------------------------------------------------------------------------------------------
 
-resource "aws_iam_service_linked_role" "cloudwatch_service_linked_role" {
-  aws_service_name = "cloudwatch-crossaccount.amazonaws.com"
-}
-
-# ----------------------------------------------------------------------------------------------------------------------
-# CREATE AN IAM ROLE TO ALLOW CLOUDTRAIL TO SHIP LOGS TO CLOUDWATCH LOGS
-# ----------------------------------------------------------------------------------------------------------------------
-
 resource "aws_iam_role" "cloudwatch_logs_role" {
   name = "allow-cloudtrail-cloudwatch-logs-write-access"
 
