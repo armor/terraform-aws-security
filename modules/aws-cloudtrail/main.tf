@@ -70,6 +70,13 @@ resource "aws_cloudtrail" "cloudtrail" {
 
   is_organization_trail = local.is_organization_trail
 
+  # Specify the CloudWatch log group to which CloudTrail events should be shipped.
+  # The ARN needs to be suffixed with `:*` for legacy compatibility reasons.
+  # See: https://github.com/hashicorp/terraform-provider-aws/issues/14557#issuecomment-671975672
+  cloud_watch_logs_group_arn = "${var.cloudwatch_log_group_arn}:*"
+
+  cloud_watch_logs_role_arn = var.cloudwatch_logs_role_arn
+
   tags = local.tags
 
   # Specifies the name of the Amazon SNS topic defined for notification of log file delivery.

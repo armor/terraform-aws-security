@@ -7,6 +7,16 @@ variable "name" {
   type        = string
 }
 
+variable "aws_region" {
+  description = "The AWS region in which these resources are provisioned."
+  type        = string
+}
+
+variable "aws_account_id" {
+  description = "The AWS account number in which these resources are provisioned."
+  type        = string
+}
+
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL MODULE PARAMETERS
 # ---------------------------------------------------------------------------------------------------------------------
@@ -188,4 +198,14 @@ variable "s3_key_prefix" {
   description = "Specifies the S3 key prefix that follows the name of the bucket you have designated for log file delivery."
   type        = string
   default     = null
+}
+
+variable "cloudwatch_log_group_arn" {
+  description = "The ARN of the CloudWatch log group to which CloudTrail logs will be shipped."
+  type        = string
+}
+
+variable "cloudwatch_logs_role_arn" {
+  description = "The ARN of the IAM role assumed by CloudTrail permitting it to send events to CloudWatch Logs."
+  type        = string
 }
