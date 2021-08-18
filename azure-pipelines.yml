@@ -16,9 +16,9 @@ resources:
       name: quantum-sec/pipeline-library
 
 jobs:
-  - template: templates/jobs/default.yml@pipeline-library
+  - template: templates/jobs/terraform.yml@pipeline-library
     parameters:
-      containerImage: quantumci.azurecr.io/quantum-ci-terragrunt:latest
+      runFunctionalTests: false
       deploySteps:
         # Update packages reference in infrastructure module
         - template: templates/steps/versioning/update-source-reference.yml@pipeline-library
