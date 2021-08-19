@@ -19,12 +19,3 @@ jobs:
   - template: templates/jobs/terraform.yml@pipeline-library
     parameters:
       runFunctionalTests: false
-      deploySteps:
-        # Update packages reference in infrastructure module
-        - template: templates/steps/versioning/update-source-reference.yml@pipeline-library
-          parameters:
-            name: UpdateInfrastructureModules
-            displayName: Update Infrastructure Modules
-            packageName: package-aws-security
-            repository: infrastructure-modules
-            condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/master'))
