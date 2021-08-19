@@ -104,7 +104,7 @@ resource "aws_config_delivery_channel" "delivery" {
 }
 
 // A status "switch": for turning AWS Config on and off
-resource "aws_config_configuration_recorder_status" "foo" {
+resource "aws_config_configuration_recorder_status" "configuration_recorder_status" {
   name       = aws_config_configuration_recorder.recorder.name
   is_enabled = var.enable_aws_config
   depends_on = [aws_config_delivery_channel.delivery]

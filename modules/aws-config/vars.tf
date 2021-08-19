@@ -4,12 +4,12 @@ variable "name" {
 }
 
 variable "enable_aws_config" {
-  description = "Boolean toggle to turn of and off the AWS Config recording"
+  description = "Boolean toggle to turn on and off the AWS Config recording"
   type        = bool
 }
 
 variable "sns_topic_arn" {
-  description = "(Optional) ARN of SNS topic for the AWS Config to deliver messages"
+  description = "ARN of SNS topic for the AWS Config to deliver messages"
   type        = string
   default     = null
 }
