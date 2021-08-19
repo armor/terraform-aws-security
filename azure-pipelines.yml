@@ -17,5 +17,3 @@ resources:
 
 jobs:
   - template: templates/jobs/terraform.yml@pipeline-library
-    parameters:
-      runFunctionalTests: false

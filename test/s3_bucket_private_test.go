@@ -18,7 +18,7 @@ func TestPrivateS3Bucket(t *testing.T) {
 
 	// Give this S3 Bucket a unique ID for a name tag so we can distinguish it from any other Buckets provisioned
 	// in your AWS account
-	name := strings.ToLower(fmt.Sprintf("test-private-s3-bucket-%s", strings.ToLower(random.UniqueId())))
+	name := strings.ToLower(fmt.Sprintf("test-%s", strings.ToLower(random.UniqueId())))
 
 	// We are currently targeting only regions defined as ApprovedRegions in variables.go.
 	// When we are comfortable with multi-region testing then we can expand ApprovedRegions
@@ -29,8 +29,8 @@ func TestPrivateS3Bucket(t *testing.T) {
 	terraformOptions := &terraform.Options{
 		TerraformDir: modulePath,
 		Vars: map[string]interface{}{
-			"name":       name,
-			"aws_region": awsRegion,
+			"name":           name,
+			"aws_region":     awsRegion,
 			"enable_logging": true,
 		},
 	}

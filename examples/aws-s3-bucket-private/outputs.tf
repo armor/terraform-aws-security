@@ -13,13 +13,7 @@ output "bucket_logging_enabled" {
   value       = module.aws_s3_bucket_private.bucket_logging_enabled
 }
 
-
 output "bucket_logging_arn" {
   description = "The target ARN of the private S3 bucket where access logs are stored."
   value       = module.aws_s3_bucket_private.bucket_logging_arn
-}
-
-output "bucket_logging_id" {
-  description = "The bucket name of the private S3 bucket where access logs are stored."
-  value       = module.aws_s3_bucket_private.bucket_logging_id
 }
