@@ -109,3 +109,160 @@ resource "aws_config_configuration_recorder_status" "configuration_recorder_stat
   is_enabled = var.enable_aws_config
   depends_on = [aws_config_delivery_channel.delivery]
 }
+
+resource "aws_config_config_rule" "access_keys_rotated" {
+  name = "access_keys_rotated"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "ACCESS_KEYS_ROTATED"
+  }
+
+  input_parameters = jsonencode({
+    maxAccessKeyAge : tostring(var.max_access_key_age)
+  })
+
+  maximum_execution_frequency = "TwentyFour_Hours"
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
+resource "aws_config_config_rule" "vpc_sg_open_only_to_authorized_ports" {
+  name = "vpc_sg_open_only_to_authorized_ports"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS"
+  }
+
+  maximum_execution_frequency = null
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
+resource "aws_config_config_rule" "dynamodb_table_encryption_enabled" {
+  name = "dynamodb_table_encryption_enabled"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "DYNAMODB_TABLE_ENCRYPTION_ENABLED"
+  }
+
+  maximum_execution_frequency = null
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
+resource "aws_config_config_rule" "guardduty_enabled_centralized" {
+  name = "guardduty_enabled_centralized"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "GUARDDUTY_ENABLED_CENTRALIZED"
+  }
+
+  maximum_execution_frequency = "TwentyFour_Hours"
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
+resource "aws_config_config_rule" "s3_account_level_public_access_blocks" {
+  name = "s3_account_level_public_access_blocks"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "S3_ACCOUNT_LEVEL_PUBLIC_ACCESS_BLOCKS"
+  }
+
+  maximum_execution_frequency = null
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
+resource "aws_config_config_rule" "s3_bucket_public_read_prohibited" {
+  name = "s3_bucket_public_read_prohibited"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "S3_BUCKET_PUBLIC_READ_PROHIBITED"
+  }
+
+  maximum_execution_frequency = null
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
+resource "aws_config_config_rule" "s3_bucket_public_write_prohibited" {
+  name = "s3_bucket_public_write_prohibited"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "S3_BUCKET_PUBLIC_WRITE_PROHIBITED"
+  }
+
+  maximum_execution_frequency = null
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
+resource "aws_config_config_rule" "root_account_mfa_enabled" {
+  name = "root_account_mfa_enabled"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "ROOT_ACCOUNT_MFA_ENABLED"
+  }
+
+  maximum_execution_frequency = "TwentyFour_Hours"
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
+resource "aws_config_config_rule" "encrypted_volumes" {
+  name = "encrypted_volumes"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "ENCRYPTED_VOLUMES"
+  }
+
+  maximum_execution_frequency = null
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
+resource "aws_config_config_rule" "rds_storage_encrypted" {
+  name = "rds_storage_encrypted"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "RDS_STORAGE_ENCRYPTED"
+  }
+
+  maximum_execution_frequency = null
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
+resource "aws_config_config_rule" "iam_password_policy" {
+  name = "iam_password_policy"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "IAM_PASSWORD_POLICY"
+  }
+
+  input_parameters = jsonencode({
+    RequireUppercaseCharacters : tostring(var.require_uppercase_characters)
+    RequireLowercaseCharacters : tostring(var.require_lowercase_characters)
+    RequireSymbols : tostring(var.require_symbols)
+    RequireNumbers : tostring(var.require_numbers)
+    MinimumPasswordLength : tostring(var.minimum_password_length)
+    PasswordReusePrevention : tostring(var.password_reuse_prevention)
+    MaxPasswordAge : tostring(var.max_password_age)
+  })
+
+  maximum_execution_frequency = "TwentyFour_Hours"
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
