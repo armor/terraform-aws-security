@@ -14,6 +14,11 @@ variable "sns_topic_arn" {
   default     = null
 }
 
+variable "max_access_key_age" {
+  description = "Maximum number of days without rotation."
+  default     = 90
+}
+
 variable "max_password_age" {
   description = "The number of days that an user password is valid."
   default     = 90

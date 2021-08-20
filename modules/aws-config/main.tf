@@ -119,7 +119,7 @@ resource "aws_config_config_rule" "access_keys_rotated" {
   }
 
   input_parameters = jsonencode({
-    maxAccessKeyAge : 90
+    maxAccessKeyAge : tostring(var.max_access_key_age)
   })
 
   maximum_execution_frequency = "TwentyFour_Hours"
@@ -253,13 +253,13 @@ resource "aws_config_config_rule" "iam_password_policy" {
   }
 
   input_parameters = jsonencode({
-    RequireUppercaseCharacters : var.require_uppercase_characters
-    RequireLowercaseCharacters : var.require_lowercase_characters
-    RequireSymbols : var.require_symbols
-    RequireNumbers : var.require_numbers
-    MinimumPasswordLength : var.minimum_password_length
-    PasswordReusePrevention : var.password_reuse_prevention
-    MaxPasswordAge : var.max_password_age
+    RequireUppercaseCharacters : tostring(var.require_uppercase_characters)
+    RequireLowercaseCharacters : tostring(var.require_lowercase_characters)
+    RequireSymbols : tostring(var.require_symbols)
+    RequireNumbers : tostring(var.require_numbers)
+    MinimumPasswordLength : tostring(var.minimum_password_length)
+    PasswordReusePrevention : tostring(var.password_reuse_prevention)
+    MaxPasswordAge : tostring(var.max_password_age)
   })
 
   maximum_execution_frequency = "TwentyFour_Hours"
