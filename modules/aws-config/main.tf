@@ -231,6 +231,19 @@ resource "aws_config_config_rule" "encrypted_volumes" {
   depends_on = [aws_config_configuration_recorder.recorder]
 }
 
+resource "aws_config_config_rule" "rds_storage_encrypted" {
+  name = "rds_storage_encrypted"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "RDS_STORAGE_ENCRYPTED"
+  }
+
+  maximum_execution_frequency = null
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
 resource "aws_config_config_rule" "iam_password_policy" {
   name = "iam_password_policy"
 
