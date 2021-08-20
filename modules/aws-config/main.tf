@@ -127,6 +127,19 @@ resource "aws_config_config_rule" "access_keys_rotated" {
   depends_on = [aws_config_configuration_recorder.recorder]
 }
 
+resource "aws_config_config_rule" "vpc_sg_open_only_to_authorized_ports" {
+  name = "vpc_sg_open_only_to_authorized_ports"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "VPC_SG_OPEN_ONLY_TO_AUTHORIZED_PORTS"
+  }
+
+  maximum_execution_frequency = null
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
 resource "aws_config_config_rule" "iam_password_policy" {
   name = "iam_password_policy"
 
