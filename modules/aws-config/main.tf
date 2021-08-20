@@ -109,3 +109,20 @@ resource "aws_config_configuration_recorder_status" "configuration_recorder_stat
   is_enabled = var.enable_aws_config
   depends_on = [aws_config_delivery_channel.delivery]
 }
+
+resource "aws_config_config_rule" "access_keys_rotated" {
+  name = "access_keys_rotated"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "ACCESS_KEYS_ROTATED"
+  }
+
+  input_parameters = jsonencode({
+    maxAccessKeyAge : 90
+  })
+
+  maximum_execution_frequency = "TwentyFour_Hours"
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
