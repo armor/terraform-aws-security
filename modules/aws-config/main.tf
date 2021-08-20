@@ -140,6 +140,19 @@ resource "aws_config_config_rule" "vpc_sg_open_only_to_authorized_ports" {
   depends_on = [aws_config_configuration_recorder.recorder]
 }
 
+resource "aws_config_config_rule" "dynamodb_table_encryption_enabled" {
+  name = "dynamodb_table_encryption_enabled"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "DYNAMODB_TABLE_ENCRYPTION_ENABLED"
+  }
+
+  maximum_execution_frequency = null
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
 resource "aws_config_config_rule" "iam_password_policy" {
   name = "iam_password_policy"
 
