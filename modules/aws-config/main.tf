@@ -153,6 +153,19 @@ resource "aws_config_config_rule" "dynamodb_table_encryption_enabled" {
   depends_on = [aws_config_configuration_recorder.recorder]
 }
 
+resource "aws_config_config_rule" "guardduty_enabled_centralized" {
+  name = "guardduty_enabled_centralized"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "GUARDDUTY_ENABLED_CENTRALIZED"
+  }
+
+  maximum_execution_frequency = "TwentyFour_Hours"
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
 resource "aws_config_config_rule" "iam_password_policy" {
   name = "iam_password_policy"
 
