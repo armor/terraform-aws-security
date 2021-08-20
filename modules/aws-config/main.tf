@@ -126,3 +126,26 @@ resource "aws_config_config_rule" "access_keys_rotated" {
 
   depends_on = [aws_config_configuration_recorder.recorder]
 }
+
+resource "aws_config_config_rule" "iam_password_policy" {
+  name = "iam_password_policy"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "IAM_PASSWORD_POLICY"
+  }
+
+  input_parameters = jsonencode({
+    RequireUppercaseCharacters : var.require_uppercase_characters
+    RequireLowercaseCharacters : var.require_lowercase_characters
+    RequireSymbols : var.require_symbols
+    RequireNumbers : var.require_numbers
+    MinimumPasswordLength : var.minimum_password_length
+    PasswordReusePrevention : var.password_reuse_prevention
+    MaxPasswordAge : var.max_password_age
+  })
+
+  maximum_execution_frequency = "TwentyFour_Hours"
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
