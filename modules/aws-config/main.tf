@@ -205,6 +205,19 @@ resource "aws_config_config_rule" "s3_bucket_public_write_prohibited" {
   depends_on = [aws_config_configuration_recorder.recorder]
 }
 
+resource "aws_config_config_rule" "root_account_mfa_enabled" {
+  name = "root_account_mfa_enabled"
+
+  source {
+    owner             = "AWS"
+    source_identifier = "ROOT_ACCOUNT_MFA_ENABLED"
+  }
+
+  maximum_execution_frequency = "TwentyFour_Hours"
+
+  depends_on = [aws_config_configuration_recorder.recorder]
+}
+
 resource "aws_config_config_rule" "iam_password_policy" {
   name = "iam_password_policy"
 
