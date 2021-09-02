@@ -25,6 +25,12 @@ variable "developer_from_accounts" {
   default     = []
 }
 
+variable "support_from_accounts" {
+  description = "A list of AWS principals (ARNs) permitted to assume the support-from-external-accounts role. If not set then the role will not be created."
+  type        = set(string)
+  default     = []
+}
+
 variable "developer_include_managed_policies" {
   type = list(string)
   default = [
@@ -56,6 +62,12 @@ variable "my_custom_policies" {
   }
 }
 
+variable "policy_name_static_prefix" {
+  description = "A static string that will be prefixed to the name of the policy."
+  type        = string
+  default     = "example_"
+}
+
 variable "role_name_static_prefix" {
   description = "A static string that will be prefixed to the name of the role. This is not the same as `name_prefix` in that it does not generate a unique name, but instead provides a static string prefix to the role name."
   type        = string
@@ -68,6 +80,7 @@ variable "included_default_policy_names" {
   default = [
     "auto_deploy_from_external_accounts",
     "developer_from_external_accounts",
+    "support_from_external_accounts",
   ]
 }
 
