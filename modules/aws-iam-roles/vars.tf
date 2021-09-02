@@ -11,6 +11,12 @@ variable "aws_account_id" {
 # OPTIONAL MODULE PARAMETERS
 # ---------------------------------------------------------------------------------------------------------------------
 
+variable "policy_name_static_prefix" {
+  description = "A static string that will be prefixed to the name of the policy."
+  type        = string
+  default     = ""
+}
+
 variable "role_name_static_prefix" {
   description = "A static string that will be prefixed to the name of the role. This is not the same as `name_prefix` in that it does not generate a unique name, but instead provides a static string prefix to the role name."
   type        = string
@@ -220,8 +226,36 @@ variable "self_manage_policy" {
   default = null
 }
 
+variable "support_from_external_accounts_policy" {
+  description = "A policy that will completely overwrite the default support_policy policy."
+  type = object({
+    name                 = string
+    description          = string
+    path                 = string
+    policy               = string
+    service_principals   = list(string)
+    aws_principals       = list(string)
+    federated_principals = list(string)
+    iam_policy_arns      = list(string)
+    role_requires_mfa    = bool
+  })
+  default = null
+}
+
 variable "developer_from_accounts" {
   description = "A list of AWS principals (ARNs) permitted to assume the developer-from-external-accounts role."
+  type        = set(string)
+  default     = []
+}
+
+variable "self_manage_from_accounts" {
+  description = "A list of AWS principals (ARNs) permitted to assume the self_manage role."
+  type        = set(string)
+  default     = []
+}
+
+variable "support_from_accounts" {
+  description = "A list of AWS principals (ARNs) permitted to assume the support role."
   type        = set(string)
   default     = []
 }

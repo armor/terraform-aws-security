@@ -7,6 +7,9 @@ terraform {
 }
 
 locals {
+  create_policies = {
+    for key, value in local.policies : key => value if value.policy != null
+  }
   policies = {
     # exclude any policies matching values in the `excluded_policy_names` list.
     for key, value in local.merged_policies : key => value if !contains(var.excluded_policy_names, key)
@@ -41,15 +44,34 @@ locals {
       role_requires_mfa    = var.developer_policy == null ? true : lookup(var.developer_policy, "role_requires_mfa", true)
     }
     self_manage = {
+      /* The default use of var.aws_account_id in aws_principals looks weird but a role must have at least one principal. This role will typically not be used as the user exists in another account. */
       name                 = var.self_manage_policy == null ? "self-manage" : lookup(var.self_manage_policy, "name", "self-manage")
       description          = var.self_manage_policy == null ? "The policy providing access for managing ones own iam user" : lookup(var.self_manage_policy, "description", "The policy providing access for managing ones own iam user")
       path                 = var.self_manage_policy == null ? var.default_path : lookup(var.self_manage_policy, "path", var.default_path)
       policy               = var.self_manage_policy == null ? data.aws_iam_policy_document.iam_manage_self.json : lookup(var.self_manage_policy, "policy", data.aws_iam_policy_document.iam_manage_self.json)
       service_principals   = var.self_manage_policy == null ? [] : lookup(var.self_manage_policy, "service_principals", [])
-      aws_principals       = var.self_manage_policy == null ? [] : lookup(var.self_manage_policy, "aws_principals" /*aws_principals should not typically be set for self_manage as you can not assume role to yourself in a different account*/, [])
+      aws_principals       = var.self_manage_policy == null ? (length(var.self_manage_from_accounts) > 0 ? var.self_manage_from_accounts : [var.aws_account_id]) : lookup(var.support_from_external_accounts_policy, "aws_principals", [var.aws_account_id])
       federated_principals = var.self_manage_policy == null ? [] : lookup(var.self_manage_policy, "federated_principals", [])
       iam_policy_arns      = var.self_manage_policy == null ? [] : lookup(var.self_manage_policy, "iam_policy_arns", [])
       role_requires_mfa    = var.self_manage_policy == null ? true : lookup(var.self_manage_policy, "role_requires_mfa", true)
+    }
+    support_from_external_accounts = {
+      /*
+       * The default use of var.aws_account_id in aws_principals looks weird but a role must have at least one principal.
+       * Policy: CIS AWS Web Services Foundations Benchmark
+       * Control Name: Ensure a support role has been created to manage incidents with AWS Support
+       * Criticality: HIGH
+       * Without this role there may be a violation of the CIS Benchmark
+       */
+      name                 = var.support_from_external_accounts_policy == null ? "support" : lookup(var.support_from_external_accounts_policy, "name", "support")
+      description          = var.support_from_external_accounts_policy == null ? "The policy providing access for managing ones own iam user and use AWS Support" : lookup(var.support_from_external_accounts_policy, "description", "The policy providing access for managing ones own iam user and use AWS Support")
+      path                 = var.support_from_external_accounts_policy == null ? var.default_path : lookup(var.support_from_external_accounts_policy, "path", var.default_path)
+      policy               = var.support_from_external_accounts_policy == null ? data.aws_iam_policy_document.require_mfa.json : lookup(var.support_from_external_accounts_policy, "policy", data.aws_iam_policy_document.require_mfa.json)
+      service_principals   = var.support_from_external_accounts_policy == null ? [] : lookup(var.support_from_external_accounts_policy, "service_principals", [])
+      aws_principals       = var.support_from_external_accounts_policy == null ? (length(var.support_from_accounts) > 0 ? var.support_from_accounts : [var.aws_account_id]) : lookup(var.support_from_external_accounts_policy, "aws_principals", [var.aws_account_id])
+      federated_principals = var.support_from_external_accounts_policy == null ? [] : lookup(var.support_from_external_accounts_policy, "federated_principals", [])
+      iam_policy_arns      = var.support_from_external_accounts_policy == null ? ["arn:aws:iam::aws:policy/AWSSupportAccess"] : lookup(var.support_from_external_accounts_policy, "iam_policy_arns", ["arn:aws:iam::aws:policy/AWSSupportAccess"])
+      role_requires_mfa    = var.support_from_external_accounts_policy == null ? true : lookup(var.support_from_external_accounts_policy, "role_requires_mfa", true)
     }
     deny_all = {
       name                 = "deny-all"
@@ -74,11 +96,11 @@ locals {
 # ----------------------------------------------------------------------------------------------------------------------
 
 module "policy" {
-  for_each = local.policies
+  for_each = local.create_policies
 
   source = "../aws-iam-policy"
 
-  name        = each.key
+  name        = format("%s%s", var.policy_name_static_prefix, each.key)
   description = lookup(each.value, "description", "The policy providing access for ${each.value["name"]}")
   path        = lookup(each.value, "path", var.default_path)
   policy      = lookup(each.value, "policy", data.aws_iam_policy_document.deny_all.json)
@@ -106,9 +128,8 @@ module "role" {
   # oidc federation
   federated_principals = lookup(each.value, "federated_principals", [])
 
-  # flatten(setproduct()) gets around the following which occurs when using setunion() or concat()
-  # The "for_each" value depends on resource attributes that cannot be determined until apply, so Terraform cannot predict how many instances will be created.
-  iam_policy_arns = compact(flatten(setproduct([module.policy[each.key].arn], lookup(each.value, "iam_policy_arns", []))))
+  # directly attached iam policies
+  iam_policy_arns = lookup(each.value, "iam_policy_arns", [])
 
   require_mfa = lookup(each.value, "role_requires_mfa", true)
 
@@ -120,7 +141,7 @@ module "role" {
 # ----------------------------------------------------------------------------------------------------------------------
 
 resource "aws_iam_role_policy_attachment" "policy" {
-  for_each   = local.policies
+  for_each   = local.create_policies
   role       = module.role[each.key].id
   policy_arn = module.policy[each.key].arn
 }
@@ -353,6 +374,72 @@ data "aws_iam_policy_document" "iam_manage_self" {
       test     = "Bool"
       variable = "aws:MultiFactorAuthPresent"
       values   = ["true"]
+    }
+  }
+}
+
+# ----------------------------------------------------------------------------------------------------------------------
+# POLICIES - require_mfa
+# ----------------------------------------------------------------------------------------------------------------------
+
+data "aws_iam_policy_document" "require_mfa" {
+
+  # Sourced from https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_examples_aws_my-sec-creds-self-manage-mfa-only.html
+  statement {
+    sid       = "AllowViewAccountInfo"
+    effect    = "Allow"
+    actions   = ["iam:ListVirtualMFADevices"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid    = "AllowManageOwnVirtualMFADevice"
+    effect = "Allow"
+    actions = [
+      "iam:CreateVirtualMFADevice",
+      "iam:DeleteVirtualMFADevice"
+    ]
+
+    resources = [
+      "arn:aws:iam::${var.aws_account_id}:mfa/$${aws:username}",
+    ]
+  }
+
+  statement {
+    sid    = "AllowManageOwnUserMFA"
+    effect = "Allow"
+    actions = [
+      "iam:DeactivateMFADevice",
+      "iam:EnableMFADevice",
+      "iam:GetUser",
+      "iam:ListMFADevices",
+      "iam:ResyncMFADevice"
+    ]
+    resources = [
+      "arn:aws:iam::${var.aws_account_id}:user/$${aws:username}",
+      # The mfa/${aws:username} resource is not included in the documentation
+      # but is required for the user to perform some of the iam:*MFA* actions
+      "arn:aws:iam::${var.aws_account_id}:mfa/$${aws:username}",
+    ]
+  }
+
+  statement {
+    sid    = "DenyAllExceptListedIfNoMFA"
+    effect = "Deny"
+    not_actions = [
+      "iam:CreateVirtualMFADevice",
+      "iam:EnableMFADevice",
+      "iam:GetUser",
+      "iam:ListMFADevices",
+      "iam:ListVirtualMFADevices",
+      "iam:ResyncMFADevice",
+      "sts:GetSessionToken"
+    ]
+    resources = ["*"]
+    condition {
+      test     = "Bool"
+      variable = "aws:MultiFactorAuthPresent"
+      values   = ["false"]
     }
   }
 }
