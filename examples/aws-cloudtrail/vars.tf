@@ -94,6 +94,10 @@ variable "tags" {
   }
 }
 
+# ---------------------------------------------------------------------------------------------------------------------
+# CMK for Cloudwatch SNS encryption
+# ---------------------------------------------------------------------------------------------------------------------
+
 variable "deletion_window_in_days" {
   description = "The number of days to retain this CMK after it has been marked for deletion."
   type        = number
