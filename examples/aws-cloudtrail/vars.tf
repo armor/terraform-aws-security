@@ -94,20 +94,6 @@ variable "tags" {
   }
 }
 
-variable "service_principal_policy_statements" {
-  description = "A map of policy statements that will be applied to the CMK key policy. The key should be the statement's SID and the value should be the statement configuration object."
-  type = map(object({
-    service = string,
-    actions = list(string),
-    conditions = list(object({
-      test     = string,
-      variable = string,
-      values   = list(string)
-    }))
-  }))
-  default = {}
-}
-
 variable "deletion_window_in_days" {
   description = "The number of days to retain this CMK after it has been marked for deletion."
   type        = number

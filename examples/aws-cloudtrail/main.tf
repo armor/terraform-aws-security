@@ -34,42 +34,31 @@ locals {
   aws_account_id = var.aws_account_id
 }
 
-data "aws_iam_policy_document" "master_key_policy" {
-
-  # Allow the root account full access to allow IAM-controlled CMK permissions.
-  statement {
-    sid       = "policiee"
-    effect    = "Allow"
-    resources = ["*"]
-    actions = [
-      "kms:Encrypt*",
-      "kms:Decrypt*",
-      "kms:ReEncrypt*",
-      "kms:GenerateDataKey*",
-      "kms:Describe*"
-    ]
-
-    principals {
-      type = "Service"
-      identifiers = [
-        "logs.ap-southeast-1.amazonaws.com"
-      ]
-    }
-  }
-}
-
 module "aws_kms_master_key" {
   source = "../../modules/aws-kms-master-key"
 
-  name                                = "${var.name}_kms_master_key"
-  deletion_window_in_days             = var.deletion_window_in_days
-  enable_key_rotation                 = var.enable_key_rotation
-  customer_master_key_spec            = var.customer_master_key_spec
-  key_usage                           = var.key_usage
-  tags                                = var.tags
-  service_principal_policy_statements = var.service_principal_policy_statements
+  name                     = "${var.name}_kms_master_key"
+  deletion_window_in_days  = var.deletion_window_in_days
+  enable_key_rotation      = var.enable_key_rotation
+  customer_master_key_spec = var.customer_master_key_spec
+  key_usage                = var.key_usage
+  tags                     = var.tags
+  service_principal_policy_statements = {
 
-  policy_document_override_json = data.aws_iam_policy_document.master_key_policy.json
+    "EncryptCloudwatchSnsTopic" : {
+      actions : [
+        "kms:Encrypt*",
+        "kms:Decrypt*",
+        "kms:ReEncrypt*",
+        "kms:GenerateDataKey*",
+        "kms:Describe*"
+      ]
+
+      service : "logs.${var.aws_region}.amazonaws.com"
+
+      conditions : []
+    }
+  }
 }
 
 module "aws_cloudtrail_monitoring" {
