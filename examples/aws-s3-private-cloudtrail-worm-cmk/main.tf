@@ -41,8 +41,9 @@ module "aws_kms_master_key" {
   name                    = local.name
   deletion_window_in_days = 7
 
-  service_principals = {
-    "cloudtrail.amazonaws.com" = {
+  service_principal_policy_statements = {
+    "AllowCloudTrailGenerateDataKey" = {
+      "service" = "cloudtrail.amazonaws.com",
       "actions" = ["kms:GenerateDataKey*"]
       "conditions" = toset([{
         test     = "StringLike",
