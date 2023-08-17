@@ -50,11 +50,11 @@ variable "aws_service_access_principals" {
   ]
 }
 
-variable "enable_cloudtrail_bucket_access_logging" {
-  description = "Toggles the creation of an additional S3 bucket and configure this private bucket to send access logs to the logging bucket."
-  type        = bool
-  default     = false
-}
+#variable "enable_cloudtrail_bucket_access_logging" {
+#  description = "Toggles the creation of an additional S3 bucket and configure this private bucket to send access logs to the logging bucket."
+#  type        = bool
+#  default     = false
+#}
 
 variable "kms_key_arn" {
   description = " The AWS KMS master key ID used for the SSE-KMS encryption. This can only be used when you set the value of sse_algorithm as aws:kms. The default aws/s3 AWS KMS master key is used if this element is absent while the sse_algorithm is aws:kms."
@@ -67,11 +67,11 @@ variable "kms_key_arn" {
   }
 }
 
-variable "logging_bucket_name" {
-  description = "The name of the target bucket that will receive the log objects. This defaults to `name`-logs. If `logging_bucket_name` is specified then the named s3 bucket is not created by this module."
-  type        = string
-  default     = null
-}
+#variable "logging_bucket_name" {
+#  description = "The name of the target bucket that will receive the log objects. This defaults to `name`-logs. If `logging_bucket_name` is specified then the named s3 bucket is not created by this module."
+#  type        = string
+#  default     = null
+#}
 
 variable "worm_mode" {
   # https://docs.aws.amazon.com/AmazonS3/latest/dev/object-lock-overview.html
@@ -91,11 +91,11 @@ variable "worm_retention_days" {
 }
 
 
-variable "create_s3_bucket" {
-  description = "Setting this to false will skip creating the S3 bucket.  This allows us to create an S3 bucket in a separate account, dedicated to audit/logging, and reference the bucket here (useful for organization trail)."
-  type        = bool
-  default     = true
-}
+#variable "create_s3_bucket" {
+#  description = "Setting this to false will skip creating the S3 bucket.  This allows us to create an S3 bucket in a separate account, dedicated to audit/logging, and reference the bucket here (useful for organization trail)."
+#  type        = bool
+#  default     = true
+#}
 
 variable "s3_bucket_name" {
   description = "Setting this value will override the computed bucket name.  If you set `create_s3_bucket` to `false` then you will need to provide a value for this variable."

@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 0.13"
+  required_version = ">= 1.2"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -13,8 +13,8 @@ provider "aws" {
 }
 
 locals {
-  this_account_id       = data.aws_caller_identity.current.account_id
-  management_account_id = data.aws_organizations_organization.current.master_account_id
+  #  this_account_id       = data.aws_caller_identity.current.account_id
+  #  management_account_id = data.aws_organizations_organization.current.master_account_id
   is_management_account = true
 
   create_cloudtrail     = true

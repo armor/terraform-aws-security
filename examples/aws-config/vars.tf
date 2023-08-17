@@ -10,8 +10,10 @@ variable "aws_region" {
 
 variable "name_prefix" {
   default = "example"
+  type    = string
 }
 
 variable "enable_aws_config" {
   default = true
+  type    = bool
 }

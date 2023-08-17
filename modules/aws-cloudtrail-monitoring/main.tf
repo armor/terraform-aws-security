@@ -4,7 +4,7 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 terraform {
-  required_version = ">= 0.13"
+  required_version = ">= 1.2"
 
   required_providers {
     aws = {
@@ -89,6 +89,7 @@ data "aws_iam_policy_document" "cloudwatch_logs_assume_role_policy" {
   }
 }
 
+#tfsec:ignore:aws-iam-no-policy-wildcards
 data "aws_iam_policy_document" "cloudwatch_logs_policy" {
   statement {
     effect = "Allow"

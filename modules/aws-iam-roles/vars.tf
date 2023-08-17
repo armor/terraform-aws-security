@@ -23,21 +23,23 @@ variable "role_name_static_prefix" {
   default     = ""
 }
 
-variable "allow_assume_role" {
-  description = "Allow the Roles to be assumed when using IAM."
-  type        = string
-  default     = true
-}
-variable "allow_assume_role_with_saml" {
-  description = "Allow the Roles to be assumed when using IAM."
-  type        = string
-  default     = true
-}
-variable "allow_assume_role_with_web_identity" {
-  description = "Allow the Roles to be assumed when using IAM."
-  type        = string
-  default     = true
-}
+#variable "allow_assume_role" {
+#  description = "Allow the Roles to be assumed when using IAM."
+#  type        = string
+#  default     = true
+#}
+
+#variable "allow_assume_role_with_saml" {
+#  description = "Allow the Roles to be assumed when using IAM."
+#  type        = string
+#  default     = true
+#}
+
+#variable "allow_assume_role_with_web_identity" {
+#  description = "Allow the Roles to be assumed when using IAM."
+#  type        = string
+#  default     = true
+#}
 
 variable "default_path" {
   description = "The path to the role. See [IAM Identifiers](https://docs.aws.amazon.com/IAM/latest/UserGuide/Using_Identifiers.html) for more information."

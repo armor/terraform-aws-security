@@ -72,7 +72,7 @@ GuardDuty admin is delegated from the Organization Management account and a Guar
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 terraform {
-  required_version = ">= 0.14.6"
+  required_version = ">= 1.2" = ">= 0.14.6"
 
   required_providers {
     aws = {
@@ -114,7 +114,7 @@ A GuardDuty instance configured as a Master that invites a list of members: (det
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 terraform {
-  required_version = ">= 0.14.6"
+  required_version = ">= 1.2" = ">= 0.14.6"
 
   required_providers {
     aws = {
@@ -158,7 +158,7 @@ A GuardDuty instance configured as a Master that invites a list of members: (det
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 terraform {
-  required_version = ">= 0.14.6"
+  required_version = ">= 1.2" = ">= 0.14.6"
 
   required_providers {
     aws = {

@@ -5,7 +5,13 @@
 terraform {
   # https://www.terraform.io/docs/language/meta-arguments/count.html
   # Version note: Module support for count was added in Terraform 0.13, and previous versions can only use it with resources.
-  required_version = ">= 0.13"
+  required_version = ">= 1.2"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 3.49.0"
+    }
+  }
 }
 
 locals {

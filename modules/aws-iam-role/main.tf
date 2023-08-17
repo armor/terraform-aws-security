@@ -3,7 +3,13 @@
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 terraform {
-  required_version = ">= 0.12"
+  required_version = ">= 1.2"
+  required_providers {
+    aws = {
+      source  = "hashicorp/aws"
+      version = ">= 3.49.0"
+    }
+  }
 }
 
 locals {
