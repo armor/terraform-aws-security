@@ -28,12 +28,6 @@ variable "aws_account_ids" {
   default     = ["*"]
 }
 
-variable "enable_cloudtrail_bucket_access_logging" {
-  description = "Toggles the creation of an additional S3 bucket and configure this private bucket to send access logs to the logging bucket."
-  type        = bool
-  default     = false
-}
-
 variable "kms_master_key_arn" {
   description = " The AWS KMS master key ID used for the SSE-KMS encryption. This can only be used when you set the value of sse_algorithm as aws:kms. The default aws/s3 AWS KMS master key is used if this element is absent while the sse_algorithm is aws:kms."
   type        = string
@@ -43,12 +37,6 @@ variable "kms_master_key_arn" {
     condition     = var.kms_master_key_arn == null || can(var.kms_master_key_arn != null && trimprefix(var.kms_master_key_arn, "aws:") != var.kms_master_key_arn)
     error_message = "If set the value must be an ARN beginning with the string 'aws:'."
   }
-}
-
-variable "logging_bucket_name" {
-  description = "The name of the target bucket that will receive the log objects. This defaults to `name`-logs. If `logging_bucket_name` is specified then the named s3 bucket is not created by this module."
-  type        = string
-  default     = null
 }
 
 variable "worm_mode" {
@@ -120,10 +108,4 @@ variable "key_usage" {
   description = "Specifies the intended use of the key."
   type        = string
   default     = "ENCRYPT_DECRYPT"
-}
-
-variable "key_tags" {
-  description = "A key-value map of tags to apply to the KMS key."
-  type        = map(string)
-  default     = {}
 }

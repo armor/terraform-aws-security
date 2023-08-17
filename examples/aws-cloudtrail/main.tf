@@ -1,5 +1,5 @@
 terraform {
-  required_version = ">= 0.12.26"
+  required_version = ">= 1.2"
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -14,9 +14,8 @@ provider "aws" {
 
 locals {
   // using distinct for aws_account_ids to keep the ordering. toset will perform both an sort and a distinct
-  aws_account_ids    = distinct(concat([data.aws_caller_identity.current.account_id], var.aws_account_ids))
-  name               = format("example-%s", var.name)
-  kms_master_key_arn = module.aws_cloudtrail.kms_key_arn
+  aws_account_ids = distinct(concat([data.aws_caller_identity.current.account_id], var.aws_account_ids))
+  name            = format("example-%s", var.name)
 
   create_cloudtrail = true
   create_s3_bucket  = var.create_s3_bucket

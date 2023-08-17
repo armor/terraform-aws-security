@@ -50,11 +50,11 @@ variable "create_detector" {
   default     = false
 }
 
-variable "ipset_name" {
-  type        = string
-  description = "Name of the ipset list."
-  default     = "IPSet"
-}
+#variable "ipset_name" {
+#  type        = string
+#  description = "Name of the ipset list."
+#  default     = "IPSet"
+#}
 
 variable "ipset_filename" {
   type        = string

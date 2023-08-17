@@ -7,15 +7,15 @@ variable "name" {
   type        = string
 }
 
-variable "aws_region" {
-  description = "The AWS region in which these resources are provisioned."
-  type        = string
-}
+#variable "aws_region" {
+#  description = "The AWS region in which these resources are provisioned."
+#  type        = string
+#}
 
-variable "aws_account_id" {
-  description = "The AWS account number in which these resources are provisioned."
-  type        = string
-}
+#variable "aws_account_id" {
+#  description = "The AWS account number in which these resources are provisioned."
+#  type        = string
+#}
 
 # ---------------------------------------------------------------------------------------------------------------------
 # OPTIONAL MODULE PARAMETERS
@@ -53,12 +53,12 @@ variable "notify_sns_topic_name" {
   default     = null
 }
 
-variable "enable_cloudtrail_bucket_access_logging" {
-  # https://docs.aws.amazon.com/AmazonS3/latest/user-guide/server-access-logging.html
-  description = "Toggle access logging of this S3 bucket."
-  type        = bool
-  default     = true
-}
+#variable "enable_cloudtrail_bucket_access_logging" {
+#  # https://docs.aws.amazon.com/AmazonS3/latest/user-guide/server-access-logging.html
+#  description = "Toggle access logging of this S3 bucket."
+#  type        = bool
+#  default     = true
+#}
 
 variable "enable_cloudtrail" {
   description = "Enables logging for the trail. Setting this to `false` will pause logging."
