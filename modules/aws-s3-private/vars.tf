@@ -75,8 +75,8 @@ variable "object_lock_configuration" {
 
 variable "policy_json" {
   description = "Additional base S3 bucket policy in JSON format."
-  type        = string
-  default     = "{}"
+  type        = list(string)
+  default     = []
 }
 
 variable "sse_algorithm" {
