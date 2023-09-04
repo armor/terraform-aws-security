@@ -168,10 +168,10 @@ resource "aws_s3_bucket_policy" "private_policy" {
 
 data "aws_iam_policy_document" "private_policy" {
 
-  # source_json is the base of the policy
-  # any statements after source_json will overwrite statements passed in via var.policy_json that have the same sid
+  # source_policy_documents is the base of the policy
+  # any statements after source_policy_documents will overwrite statements passed in via var.policy_json that have the same sid
   # if a statement passed in via var.policy_json does not have a sid then it can not be overwritten
-  source_json = var.policy_json
+  source_policy_documents = var.policy_json
 
   # ALWAYS REQUIRE TLS IN ORDER TO ACCESS THIS BUCKET
   # https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_evaluation-logic.html
