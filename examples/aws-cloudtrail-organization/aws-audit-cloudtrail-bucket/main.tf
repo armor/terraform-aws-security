@@ -40,7 +40,7 @@ locals {
 
   default_tags = {
     managed_by = "terraform"
-    module     = "quantum-sec/package-aws-security/examples/aws-cloudtrail"
+    module     = "armor/terraform-aws-security/examples/aws-cloudtrail"
   }
   tags = merge(local.default_tags, var.tags)
 }

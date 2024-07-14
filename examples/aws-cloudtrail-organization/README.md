@@ -15,7 +15,7 @@ for [cloudtrail](https://aws.amazon.com/cloudtrail/) logs.
 >
 > running in our logging account with the aws account id: `123456789012`
 >
-> example: `terraform apply -var name=quantum-123 -var aws_account_ids='["123456789012", "234567890123", "345678901234"]'`
+> example: `terraform apply -var name=armor-123 -var aws_account_ids='["123456789012", "234567890123", "345678901234"]'`
 
 > **NOTE:** When applying `aws-org-cloudtrail` you will need to use values from the output of `aws-audit-cloudtrail-bucket`
 > values: `s3_bucket_name`, `kms_key_arn`
@@ -25,7 +25,7 @@ for [cloudtrail](https://aws.amazon.com/cloudtrail/) logs.
 >
 > running in our organization management account with the aws account id: `234567890123`, pointing to s3 and kms in `123456789012`
 >
-> example: `terraform plan -var name=quantum-123 -var s3_bucket_name=cloudtrail-123456789012-example-quantum-123 -var kms_key_arn="arn:aws:kms:ap-southeast-1:123456789012:key/4b2f0c70-b503-4849-8286-34a6938c88a7"`
+> example: `terraform plan -var name=armor-123 -var s3_bucket_name=cloudtrail-123456789012-example-armor-123 -var kms_key_arn="arn:aws:kms:ap-southeast-1:123456789012:key/4b2f0c70-b503-4849-8286-34a6938c88a7"`
 
 In this example we are splitting the cloudtrail away from the S3 and CMK.  This helps to ensure that we do not have production
 workloads in our organization account.  In addition to no production workloads in this account we can also provide very limited

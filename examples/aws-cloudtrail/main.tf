@@ -25,7 +25,7 @@ locals {
   worm_retention_days = var.worm_retention_days
   default_tags = {
     managed_by = "terraform"
-    module     = "quantum-sec/package-aws-security/examples/aws-cloudtrail"
+    module     = "armor/terraform-aws-security/examples/aws-cloudtrail"
   }
   tags = merge(local.default_tags, var.tags)
 

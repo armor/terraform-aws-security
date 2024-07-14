@@ -1,10 +1,11 @@
-trigger:
-  batch: true
-  branches:
-    include:
-      - master
-      - feature/*
-      - fix/*
+trigger: none
+#trigger: #TODO: switch to Github Actions
+#  batch: true
+#  branches:
+#    include:
+#      - master
+#      - feature/*
+#      - fix/*
 
 pr: none
 

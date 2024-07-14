@@ -1,4 +1,4 @@
-module github.com/quantum-sec/package-aws-security
+module github.com/armor/terraform-aws-security
 
 go 1.15
 

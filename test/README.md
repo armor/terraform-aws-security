@@ -17,8 +17,8 @@ themselves. Therefore, we set a timeout of 45 minutes to make sure all tests hav
 ### Prerequisites
 
 - [Install Go](https://golang.org/)
-- [Install Terraform](https://github.com/quantum-sec/meta/tree/master/setup/terragrunt)
-- [Login to the AWS CLI](https://github.com/quantum-sec/infrastructure-live-customer/blob/master/.tools/aws/aws-cli-login.sh)
+- [Install Terraform](https://github.com/armor/meta/blob/master/setup/terragrunt/)
+- [Login to the AWS CLI](https://github.com/armor/awscli-login/)
 
 ### Run All of the Tests
 
