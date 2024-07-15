@@ -21,7 +21,7 @@ repos:
       - id: terraform_fmt
       - id: terraform_tflint
       - id: terraform_tfsec
-  - repo: https://github.com/quantum-sec/pre-commit
+  - repo: https://github.com/quantum-sec/pre-commit #TODO: Switch to Armor Pre-Commit
     rev: 1.1.1
     hooks:
       - id: terraform-validate

@@ -87,7 +87,7 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "guardduty" {
-  source = "git::git@github.com:quantum-sec/package-aws-security.git//modules/aws-guardduty?ref=2.0.1"
+  source = "git::git@github.com:armor/terraform-aws-security.git//modules/aws-guardduty?ref=2.0.1"
 
   aws_account_id = "xxxxxxxxxxxx"
   main_region   = "ap-southeast-1"
@@ -129,7 +129,7 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "guardduty" {
-  source = "git::git@github.com:quantum-sec/package-aws-security.git//modules/aws-guardduty?ref=2.0.1"
+  source = "git::git@github.com:armor/terraform-aws-security.git//modules/aws-guardduty?ref=2.0.1"
 
   aws_account_id = "xxxxxxxxxxxx"
   aws_region     = "ap-southeast-1"
@@ -173,7 +173,7 @@ terraform {
 # ---------------------------------------------------------------------------------------------------------------------
 
 module "guardduty" {
-  source = "git::git@github.com:quantum-sec/package-aws-security.git//modules/aws-guardduty?ref=2.0.1"
+  source = "git::git@github.com:armor/terraform-aws-security.git//modules/aws-guardduty?ref=2.0.1"
 
   aws_account_id         = "xxxxxxxxxxxx"
   aws_region             = "ap-southeast-1"

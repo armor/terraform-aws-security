@@ -6,5 +6,5 @@ variable "name" {
 variable "path" {
   description = "The path in which to create the service account."
   type        = string
-  default     = "/quantum-service-accounts/"
+  default     = "/armor-service-accounts/"
 }

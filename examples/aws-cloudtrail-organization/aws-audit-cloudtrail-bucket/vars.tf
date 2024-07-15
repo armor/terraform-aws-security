@@ -92,7 +92,7 @@ variable "tags" {
     department  = "security_engineering"
     team        = "cloud_security"
     stack       = "security_events"
-    project     = "quantum"
+    project     = "armor"
     service     = "cloudtrail"
     application = "sentinel"
   }

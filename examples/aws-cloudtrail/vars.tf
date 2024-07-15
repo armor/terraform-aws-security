@@ -28,16 +28,16 @@ variable "aws_account_ids" {
   default     = ["*"]
 }
 
-variable "kms_master_key_arn" {
-  description = " The AWS KMS master key ID used for the SSE-KMS encryption. This can only be used when you set the value of sse_algorithm as aws:kms. The default aws/s3 AWS KMS master key is used if this element is absent while the sse_algorithm is aws:kms."
-  type        = string
-  default     = null
-
-  validation {
-    condition     = var.kms_master_key_arn == null || can(var.kms_master_key_arn != null && trimprefix(var.kms_master_key_arn, "aws:") != var.kms_master_key_arn)
-    error_message = "If set the value must be an ARN beginning with the string 'aws:'."
-  }
-}
+#variable "kms_master_key_arn" {
+#  description = " The AWS KMS master key ID used for the SSE-KMS encryption. This can only be used when you set the value of sse_algorithm as aws:kms. The default aws/s3 AWS KMS master key is used if this element is absent while the sse_algorithm is aws:kms."
+#  type        = string
+#  default     = null
+#
+#  validation {
+#    condition     = var.kms_master_key_arn == null || can(var.kms_master_key_arn != null && trimprefix(var.kms_master_key_arn, "aws:") != var.kms_master_key_arn)
+#    error_message = "If set the value must be an ARN beginning with the string 'aws:'."
+#  }
+#}
 
 variable "worm_mode" {
   # https://docs.aws.amazon.com/AmazonS3/latest/dev/object-lock-overview.html
@@ -76,7 +76,7 @@ variable "tags" {
     department  = "security_engineering"
     team        = "cloud_security"
     stack       = "security_events"
-    project     = "quantum"
+    project     = "armor"
     service     = "cloudtrail"
     application = "sentinel"
   }
